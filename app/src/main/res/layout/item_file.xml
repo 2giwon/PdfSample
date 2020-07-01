@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="documentItem"
+            type="kr.eg.egiwon.pdfsample.filebrowser.model.DocumentItem" />
+
+        <variable
+            name="vm"
+            type="kr.eg.egiwon.pdfsample.filebrowser.FileBrowserViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:focusable="true"
+        android:onClick="@{() -> vm.onClick(documentItem)}">
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/_split_begin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.05" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/iv_entry"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:directorySrc="@{documentItem.isDirectory}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintDimensionRatio="H,1:1.2"
+            app:layout_constraintEnd_toEndOf="@id/_split_end"
+            app:layout_constraintStart_toEndOf="@id/_split_begin"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:src="@drawable/ic_folder" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/_split_end"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.20" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tv_file_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:singleLine="true"
+            android:text="@{documentItem.name}"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/_barrier"
+            app:layout_constraintStart_toEndOf="@id/_split_end"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="filename" />
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/_barrier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="left"
+            app:constraint_referenced_ids="tv_file_size, tv_file_modified" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tv_file_size"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{documentItem.size}"
+            android:textStyle="normal"
+            app:layout_constraintBottom_toTopOf="@id/tv_file_modified"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="20.5 KB" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tv_file_modified"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{documentItem.lastModified}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_file_size"
+            tools:text="20/05/01" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
