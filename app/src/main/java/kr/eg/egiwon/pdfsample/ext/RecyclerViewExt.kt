@@ -2,7 +2,7 @@ package kr.eg.egiwon.pdfsample.ext
 
 import androidx.databinding.BindingAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.egiwon.scopedstorageexample.base.BaseAdapter
+import kr.eg.egiwon.pdfsample.base.BaseAdapter
 
 
 @Suppress("UNCHECKED_CAST")

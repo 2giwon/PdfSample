@@ -4,7 +4,6 @@ import android.net.Uri
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.egiwon.scopedstorageexample.base.BaseViewModel
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -12,6 +11,7 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import kr.eg.egiwon.pdfsample.Event
+import kr.eg.egiwon.pdfsample.base.BaseViewModel
 import kr.eg.egiwon.pdfsample.data.FileBrowserRepository
 import kr.eg.egiwon.pdfsample.filebrowser.model.DocumentItem
 import kr.eg.egiwon.pdfsample.util.DocumentProvider

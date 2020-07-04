@@ -5,13 +5,15 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.recyclerview.widget.DividerItemDecoration
-import com.egiwon.scopedstorageexample.base.BaseActivity
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.subjects.BehaviorSubject
+import kr.eg.egiwon.pdfsample.BR
 import kr.eg.egiwon.pdfsample.EventObserver
 import kr.eg.egiwon.pdfsample.R
+import kr.eg.egiwon.pdfsample.base.BaseActivity
+import kr.eg.egiwon.pdfsample.base.BaseAdapter2
 import kr.eg.egiwon.pdfsample.databinding.ActivityMainBinding
 import kr.eg.egiwon.pdfsample.filebrowser.model.DocumentItem
 
@@ -61,7 +63,11 @@ class MainActivity :
     }
 
     private fun ActivityMainBinding.initAdapter() {
-        rvFiles.adapter = FileViewAdapter(viewModel = viewModel)
+        rvFiles.adapter = object : BaseAdapter2(
+            R.layout.item_file,
+            BR.documentItem,
+            mapOf(BR.vm to viewModel)
+        ) {}
         rvFiles.setHasFixedSize(true)
         rvFiles.addItemDecoration(
             DividerItemDecoration(this@MainActivity, DividerItemDecoration.VERTICAL)

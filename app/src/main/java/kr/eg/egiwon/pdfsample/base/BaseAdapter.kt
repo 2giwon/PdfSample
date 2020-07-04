@@ -1,4 +1,4 @@
-package com.egiwon.scopedstorageexample.base
+package kr.eg.egiwon.pdfsample.base
 
 import android.view.ViewGroup
 import androidx.annotation.LayoutRes
