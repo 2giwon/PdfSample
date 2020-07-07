@@ -7,6 +7,10 @@ import kr.eg.egiwon.pdfsample.R
 @BindingAdapter("directorySrc")
 fun AppCompatImageView.directorySrc(isDirectory: Boolean) {
     setImageDrawable(
-        if (isDirectory) resources.getDrawable(R.drawable.ic_folder, null) else null
+        if (isDirectory) {
+            resources.getDrawable(R.drawable.ic_folder, null)
+        } else {
+            resources.getDrawable(R.drawable.ic_pdf, null)
+        }
     )
 }

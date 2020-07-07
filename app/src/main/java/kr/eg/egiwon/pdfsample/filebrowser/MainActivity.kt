@@ -64,9 +64,9 @@ class MainActivity :
 
     private fun ActivityMainBinding.initAdapter() {
         rvFiles.adapter = object : BaseAdapter2(
-            R.layout.item_file,
             BR.documentItem,
-            mapOf(BR.vm to viewModel)
+            mapOf(BR.vm to viewModel),
+            mapOf(DocumentItem::class to R.layout.item_file)
         ) {}
         rvFiles.setHasFixedSize(true)
         rvFiles.addItemDecoration(
