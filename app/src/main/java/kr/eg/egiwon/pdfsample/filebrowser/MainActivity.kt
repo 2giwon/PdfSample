@@ -15,6 +15,7 @@ import kr.eg.egiwon.pdfsample.R
 import kr.eg.egiwon.pdfsample.base.BaseActivity
 import kr.eg.egiwon.pdfsample.base.BaseAdapter2
 import kr.eg.egiwon.pdfsample.databinding.ActivityMainBinding
+import kr.eg.egiwon.pdfsample.ext.setupActionBar
 import kr.eg.egiwon.pdfsample.filebrowser.model.DocumentItem
 
 @AndroidEntryPoint
@@ -29,6 +30,9 @@ class MainActivity :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        setupActionBar(R.id.toolbar) {}
+
         bind {
             vm = viewModel
             initAdapter()
@@ -102,7 +106,7 @@ class MainActivity :
     private fun openIntentDirectory() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
             flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or
-                    Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+                Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
         }
 
         startActivityForResult(intent, OPEN_DIRECTORY_REQUEST_CODE)
