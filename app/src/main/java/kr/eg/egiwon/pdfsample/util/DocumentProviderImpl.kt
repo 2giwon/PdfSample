@@ -4,6 +4,7 @@ import android.content.ContentResolver
 import android.content.Context
 import android.database.Cursor
 import android.net.Uri
+import android.os.ParcelFileDescriptor
 import android.provider.DocumentsContract
 import kr.eg.egiwon.pdfsample.ext.toFileSizeUnit
 import kr.eg.egiwon.pdfsample.ext.toLastModifiedTime
@@ -15,6 +16,10 @@ class DocumentProviderImpl @Inject constructor(
 ) : DocumentProvider {
     override fun getDocuments(documentUri: Uri): List<DocumentItem> {
         return loadDirectoryFromContentResolver(documentUri)
+    }
+
+    override fun documentUriToParcelFileDescriptor(documentUri: Uri): ParcelFileDescriptor? {
+        return applicationContext.contentResolver.openFileDescriptor(documentUri, "r")
     }
 
     private fun loadDirectoryFromContentResolver(documentUri: Uri): List<DocumentItem> {

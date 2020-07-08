@@ -17,12 +17,20 @@
         android:layout_height="match_parent"
         tools:context=".filebrowser.MainActivity">
 
+        <include
+            android:id="@+id/layout_toolbar"
+            layout="@layout/include_action_bar" />
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_files"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
             app:replaceItems="@{vm.documents}"
             app:layoutManager="LinearLayoutManager"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/layout_toolbar"
             tools:listitem="@layout/item_file" />
 
         <ProgressBar

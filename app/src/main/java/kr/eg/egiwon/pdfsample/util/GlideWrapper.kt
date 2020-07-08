@@ -23,17 +23,6 @@ object GlideWrapper {
             .into(target)
     }
 
-    private fun <T> asyncLoadThumbnailImage(
-        target: ImageView,
-        loadContent: T,
-        thumbnailSize: Float
-    ) {
-        loadImage(target, loadContent)
-            .thumbnail(thumbnailSize)
-            .transitionApply()
-            .into(target)
-    }
-
     private fun <T> loadImage(
         target: ImageView,
         loadContent: T
@@ -86,6 +75,19 @@ object GlideWrapper {
 
                 override fun onLoadCleared(placeholder: Drawable?) = Unit
             })
+    }
+
+    fun loadThumbnailImage(
+        target: ImageView,
+        bitmap: Bitmap,
+        thumbnailSize: Float,
+        placeholder: Int = 0
+    ) {
+        loadImage(target, bitmap)
+            .thumbnail(thumbnailSize)
+            .transitionApply()
+            .placeholder(placeholder)
+            .into(target)
     }
 
     fun recycledImage(target: ImageView) {
