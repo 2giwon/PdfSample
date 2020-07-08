@@ -62,6 +62,12 @@ dependencies {
     // fragment ktx
     implementation "androidx.fragment:fragment-ktx:1.2.5"
 
+    // Pdfium
+    implementation 'com.github.barteksc:pdfium-android:1.9.0'
+
+    // Glide
+    implementation "com.github.bumptech.glide:glide:4.11.0"
+
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
