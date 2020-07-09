@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import io.reactivex.disposables.CompositeDisposable
 
 abstract class BaseViewModel : ViewModel() {
-    protected val compositeDisposable = CompositeDisposable()
+    protected val compositeDisposable: CompositeDisposable by lazy(::CompositeDisposable)
 
     protected val errorThrowableMutableLiveData = MutableLiveData<Throwable>()
     val errorThrowableLiveData: LiveData<Throwable> get() = errorThrowableMutableLiveData
