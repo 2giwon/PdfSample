@@ -13,7 +13,7 @@ fun AppCompatImageView.directorySrc(isDirectory: Boolean) {
         if (isDirectory) {
             resources.getDrawable(R.drawable.ic_folder, null)
         } else {
-            null
+            resources.getDrawable(R.drawable.ic_pdf, null)
         }
     )
 
