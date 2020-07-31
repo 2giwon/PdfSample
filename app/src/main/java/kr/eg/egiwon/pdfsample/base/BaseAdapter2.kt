@@ -14,7 +14,7 @@ abstract class BaseAdapter2(
     private val mapper: Map<KClass<out BaseIdentifier>, Int> = mapOf()
 ) : RecyclerView.Adapter<BindingViewHolder>(), AutoUpdatable {
 
-    private val list: MutableList<BaseIdentifier> by Delegates.observable(mutableListOf()) { _, old, new ->
+    private var list: List<BaseIdentifier> by Delegates.observable(emptyList()) { _, old, new ->
         autoNotify(old, new) { o, n -> o.id == n.id }
     }
 
@@ -33,10 +33,7 @@ abstract class BaseAdapter2(
 
     fun replaceItems(items: List<BaseIdentifier>?) {
         if (items != null) {
-            with(list) {
-                clear()
-                addAll(items)
-            }
+            list = items
         }
     }
 
