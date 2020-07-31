@@ -149,8 +149,7 @@ class FileBrowserViewModel @ViewModelInject constructor(
                             item.isDirectory,
                             item.uri,
                             item.size,
-                            item.lastModified,
-                            thumbnail
+                            item.lastModified
                         )
                     } ?: Throwable()
                 }

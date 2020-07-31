@@ -31,7 +31,9 @@ class MainActivity :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setupActionBar(R.id.toolbar) {}
+        setupActionBar(R.id.toolbar) {
+            title = getString(R.string.actionbar_title)
+        }
 
         bind {
             vm = viewModel
