@@ -3,6 +3,7 @@ package kr.eg.egiwon.pdfsample.pdfview
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.viewModels
+import androidx.lifecycle.Observer
 import dagger.hilt.android.AndroidEntryPoint
 import kr.eg.egiwon.pdfsample.R
 import kr.eg.egiwon.pdfsample.base.BaseActivity
@@ -28,8 +29,14 @@ class PdfViewActivity : BaseActivity<ActivityPdfBinding, PdfViewModel>(
 
         }
 
-        bind {
-            binding.pdfView
-        }
+        addObserve()
+    }
+
+    override fun addObserve() {
+        super.addObserve()
+
+        viewModel.pdfPageBitmap.observe(this, Observer {
+            (binding.pdfView as PdfViewAction).loadPdfPage { it }
+        })
     }
 }

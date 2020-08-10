@@ -17,6 +17,10 @@ class PdfView @JvmOverloads constructor(
         isAntiAlias = true
     }
 
+    init {
+        setWillNotDraw(false)
+    }
+
     private var pageBitmap: Bitmap? = null
 
     override fun onDraw(canvas: Canvas?) {
@@ -30,5 +34,6 @@ class PdfView @JvmOverloads constructor(
 
     override fun loadPdfPage(block: () -> Bitmap) {
         pageBitmap = block()
+        invalidate()
     }
 }

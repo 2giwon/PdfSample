@@ -37,6 +37,8 @@ class PdfCore @Inject constructor(private val context: Context) : PdfReadable {
             printInfo(pdfCore, pdfDocument)
 
             pdfCore.closeDocument(pdfDocument)
+
+            return documentBitmap
         } catch (throwable: Throwable) {
 
         }
