@@ -22,10 +22,12 @@ class PdfViewModel @ViewModelInject constructor(
     val pdfPageBitmap: LiveData<Bitmap> get() = _pdfPageBitmap
 
     fun loadPdfDocument(fd: ParcelFileDescriptor) {
-        Single.create<Bitmap> {
-            val bitmap = pdfReadable.loadPdfBitmap(fd, 0)
-
-            it.onSuccess((bitmap ?: it.onError(Throwable())) as Bitmap)
+        Single.create<Bitmap> { emitter ->
+            pdfReadable.loadPdfBitmap(fd, 0)?.let {
+                emitter.onSuccess(it)
+            } ?: run {
+                emitter.onError(Throwable())
+            }
         }.subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
