@@ -1,9 +1,9 @@
 package kr.eg.egiwon.pdfsample.filebrowser
 
-import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
+import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.DividerItemDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.disposables.CompositeDisposable
@@ -17,6 +17,7 @@ import kr.eg.egiwon.pdfsample.base.BaseAdapter2
 import kr.eg.egiwon.pdfsample.databinding.ActivityMainBinding
 import kr.eg.egiwon.pdfsample.ext.setupActionBar
 import kr.eg.egiwon.pdfsample.filebrowser.model.DocumentItem
+import kr.eg.egiwon.pdfsample.pdfview.PdfViewActivity
 
 @AndroidEntryPoint
 class MainActivity :
@@ -131,19 +132,24 @@ class MainActivity :
     }
 
     private fun openDocument(item: DocumentItem) {
-        try {
-            val openIntent = Intent(Intent.ACTION_VIEW).apply {
-                flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-                data = item.uri
-            }
-            startActivity(openIntent)
-        } catch (ex: ActivityNotFoundException) {
-            showToast(getString(R.string.error_invalid_activity, item.name))
+        val openIntent = Intent(this, PdfViewActivity::class.java).apply {
+            putExtras(bundleOf(OPEN_DOCUMENT_URI to item.uri.toString()))
         }
+        startActivity(openIntent)
+//        try {
+//            val openIntent = Intent(Intent.ACTION_VIEW).apply {
+//                flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+//                data = item.uri
+//            }
+//            startActivity(openIntent)
+//        } catch (ex: ActivityNotFoundException) {
+//            showToast(getString(R.string.error_invalid_activity, item.name))
+//        }
     }
 
     companion object {
         private const val OPEN_DIRECTORY_REQUEST_CODE = 0xf11e
+        const val OPEN_DOCUMENT_URI = "open_document_uri"
     }
 
 }

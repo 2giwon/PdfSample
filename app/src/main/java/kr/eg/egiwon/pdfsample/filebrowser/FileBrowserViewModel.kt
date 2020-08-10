@@ -1,13 +1,11 @@
 package kr.eg.egiwon.pdfsample.filebrowser
 
-import android.graphics.Bitmap
 import android.net.Uri
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import io.reactivex.Completable
 import io.reactivex.Observable
-import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
@@ -131,44 +129,44 @@ class FileBrowserViewModel @ViewModelInject constructor(
         }
     }
 
-    private fun loadPdfThumbnail(pdfDocument: DocumentItem) {
-        Single.create<Bitmap?> {
-            val fd =
-                documentProvider.documentUriToParcelFileDescriptor(pdfDocument.uri)
-            fd?.let {
-                pdfReadable.loadPdfBitmap(it, 0)
-            } ?: throw error("error")
-        }.subscribeOn(Schedulers.io())
-            .flatMap { thumbnail ->
-                Single.create<DocumentItem> {
-                    val item = documentList.find { pdfDocument.id == it.id }
-                    item?.let {
-                        DocumentItem(
-                            item.name,
-                            item.type,
-                            item.isDirectory,
-                            item.uri,
-                            item.size,
-                            item.lastModified
-                        )
-                    } ?: Throwable()
-                }
-            }
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy(
-                onSuccess = { documentItem ->
-                    for (i in documentList.indices) {
-                        if (documentList[i].id == documentItem.id) {
-                            documentList[i] = documentItem
-                        }
-                    }
-
-                    _documents.value = documentList
-                },
-                onError = {}
-            )
-            .addTo(compositeDisposable)
-
-    }
+//    private fun loadPdfThumbnail(pdfDocument: DocumentItem) {
+//        Single.create<Bitmap?> {
+//            val fd =
+//                documentProvider.documentUriToParcelFileDescriptor(pdfDocument.uri)
+//            fd?.let {
+//                pdfReadable.loadPdfBitmap(it, 0)
+//            } ?: throw error("error")
+//        }.subscribeOn(Schedulers.io())
+//            .flatMap { thumbnail ->
+//                Single.create<DocumentItem> {
+//                    val item = documentList.find { pdfDocument.id == it.id }
+//                    item?.let {
+//                        DocumentItem(
+//                            item.name,
+//                            item.type,
+//                            item.isDirectory,
+//                            item.uri,
+//                            item.size,
+//                            item.lastModified
+//                        )
+//                    } ?: Throwable()
+//                }
+//            }
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribeBy(
+//                onSuccess = { documentItem ->
+//                    for (i in documentList.indices) {
+//                        if (documentList[i].id == documentItem.id) {
+//                            documentList[i] = documentItem
+//                        }
+//                    }
+//
+//                    _documents.value = documentList
+//                },
+//                onError = {}
+//            )
+//            .addTo(compositeDisposable)
+//
+//    }
 
 }
