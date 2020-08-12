@@ -4,5 +4,12 @@ import android.graphics.Bitmap
 import android.os.ParcelFileDescriptor
 
 interface PdfReadable {
-    fun loadPdfBitmap(fd: ParcelFileDescriptor, pageNum: Int): Bitmap?
+
+    fun openPdfDocument(fd: ParcelFileDescriptor): Boolean
+
+    fun closeDocument()
+
+    fun loadPdfBitmap(pageNum: Int): Bitmap?
+
+    fun getPageCount(): Int
 }

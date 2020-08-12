@@ -8,16 +8,15 @@ import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
 import javax.inject.Inject
 
-class PdfCore @Inject constructor(private val context: Context) : PdfReadable {
+class PdfCore @Inject constructor(context: Context) : PdfReadable {
 
     private val pdfCore: PdfiumCore = PdfiumCore(context)
+    private lateinit var pdfDocument: PdfDocument
 
-    override fun loadPdfBitmap(fd: ParcelFileDescriptor, pageNum: Int): Bitmap? {
 
+    override fun loadPdfBitmap(pageNum: Int): Bitmap? {
         try {
-            val pdfDocument = pdfCore.newDocument(fd)
             pdfCore.openPage(pdfDocument, pageNum)
-
             val width = pdfCore.getPageWidthPoint(pdfDocument, pageNum)
             val height = pdfCore.getPageHeightPoint(pdfDocument, pageNum)
 
@@ -34,16 +33,31 @@ class PdfCore @Inject constructor(private val context: Context) : PdfReadable {
                 height
             )
 
-            printInfo(pdfCore, pdfDocument)
-
-            pdfCore.closeDocument(pdfDocument)
-
             return documentBitmap
-        } catch (throwable: Throwable) {
-
+        } catch (ex: Exception) {
+            throw Exception(ex.message)
         }
+    }
 
-        return null
+    override fun getPageCount(): Int = pdfCore.getPageCount(pdfDocument)
+
+    override fun openPdfDocument(fd: ParcelFileDescriptor): Boolean {
+        runCatching {
+            pdfDocument = pdfCore.newDocument(fd)
+        }.onSuccess {
+            printInfo(pdfCore, pdfDocument)
+            return true
+        }.onFailure {
+            return false
+        }
+        return false
+    }
+
+    override fun closeDocument() {
+        try {
+            pdfCore.closeDocument(pdfDocument)
+        } catch (ignore: Exception) {
+        }
     }
 
     private fun printInfo(core: PdfiumCore, doc: PdfDocument) {
