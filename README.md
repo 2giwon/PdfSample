@@ -7,5 +7,5 @@
 <img src="./pdf.gif" width="40%" />
 
 ## 사용 기술
-
+<img src=./mvvm.png width="70%" height="70%" />
 
