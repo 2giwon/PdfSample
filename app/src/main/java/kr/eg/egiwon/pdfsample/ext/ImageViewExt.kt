@@ -22,3 +22,7 @@ fun AppCompatImageView.directorySrc(isDirectory: Boolean) {
 @BindingAdapter("loadAsyncImage", "thumbnailSize")
 fun ImageView.loadAsyncThumbnailImage(bitmap: Bitmap, size: Float) =
     GlideWrapper.loadThumbnailImage(this, bitmap, size, R.drawable.ic_pdf)
+
+@BindingAdapter("loadPdfPageBitmap")
+fun ImageView.loadAsyncPdfPageBitmap(bitmap: Bitmap) =
+    GlideWrapper.asyncLoadImage(this, bitmap)
