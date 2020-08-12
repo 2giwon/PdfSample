@@ -43,7 +43,7 @@ class PdfViewModel @ViewModelInject constructor(
         _isOpenDocument.value = isOpened
     }
 
-    fun loadPdfBitmaps() {
+    private fun loadPdfBitmaps() {
         Observable.fromIterable(0 until _pageCount)
             .doOnSubscribe { _isShowLoadingBar.postValue(true) }
             .doAfterTerminate { _isShowLoadingBar.postValue(false) }
