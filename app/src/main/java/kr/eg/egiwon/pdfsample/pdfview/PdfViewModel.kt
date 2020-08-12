@@ -62,6 +62,7 @@ class PdfViewModel @ViewModelInject constructor(
                     pdfPageList.add(
                         PdfPage(pageNum, it, pageNum++)
                     )
+                    _pdfPages.value = pdfPageList
                 },
                 onError = {
                     errorThrowableMutableLiveData.value = it
