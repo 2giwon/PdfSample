@@ -33,6 +33,7 @@ object GlideWrapper {
 
     private fun RequestBuilder<Bitmap>.transitionApply(): RequestBuilder<Bitmap> {
         return transition(BitmapTransitionOptions.withCrossFade())
+            .fitCenter()
     }
 
     private fun RequestBuilder<Bitmap>.applyRequestOptions(
