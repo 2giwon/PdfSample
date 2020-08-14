@@ -59,16 +59,13 @@ class PdfViewModel @ViewModelInject constructor(
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
                 onNext = {
-                    pdfPageList.add(
-                        PdfPage(pageNum, it, pageNum++)
-                    )
+                    pdfPageList.add(PdfPage(pageNum, it, pageNum++))
                     _pdfPages.value = pdfPageList
                 },
                 onError = {
                     errorThrowableMutableLiveData.value = it
                 },
                 onComplete = {
-                    _pdfPages.value = pdfPageList
                     pdfReadable.closeDocument()
                 }
             ).addTo(compositeDisposable)

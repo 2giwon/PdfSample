@@ -23,24 +23,30 @@ class PdfViewActivity : BaseActivity<ActivityPdfBinding, PdfViewModel>(
 
         bind {
             vm = viewModel
-            rvPdf.adapter = object : BaseAdapter2(
-                BR.pdfPage,
-                mapOf(BR.vm to viewModel),
-                mapOf(PdfPage::class to R.layout.item_pdf_page)
-
-            ) {}
-            rvPdf.setHasFixedSize(true)
+            initAdapter()
         }
+
         intent.extras?.getString(OPEN_DOCUMENT_URI)?.let {
-            val uri = Uri.parse(it)
-            runCatching {
-                requireNotNull(contentResolver.openFileDescriptor(uri, "r"))
-            }
-                .onSuccess { fd -> viewModel.loadPdfDocument(fd) }
-                .onFailure { throwable -> showToast(throwable.message ?: "") }
-
+            loadPdfDocument(it)
         }
-
     }
 
+    private fun loadPdfDocument(it: String) {
+        val uri = Uri.parse(it)
+        runCatching {
+            requireNotNull(contentResolver.openFileDescriptor(uri, "r"))
+        }
+            .onSuccess { fd -> viewModel.loadPdfDocument(fd) }
+            .onFailure { throwable -> showToast(throwable.message ?: "") }
+    }
+
+    private fun ActivityPdfBinding.initAdapter() {
+        rvPdf.adapter = object : BaseAdapter2(
+            BR.pdfPage,
+            mapOf(BR.vm to viewModel),
+            mapOf(PdfPage::class to R.layout.item_pdf_page)
+
+        ) {}
+        rvPdf.setHasFixedSize(true)
+    }
 }
