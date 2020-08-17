@@ -6,6 +6,8 @@
 ## ScreenShot
 <img src="./pdf.gif" width="40%" />
 
-## 사용 기술
+## 아키텍쳐
 <img src=./mvvm.png width="70%" height="70%" />
+
+## 적용 기술
 
