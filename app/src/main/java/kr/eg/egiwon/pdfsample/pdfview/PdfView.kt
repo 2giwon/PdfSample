@@ -5,25 +5,23 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.util.AttributeSet
-import androidx.appcompat.widget.AppCompatImageView
+import android.widget.FrameLayout
 
 class PdfView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
-) : AppCompatImageView(context, attrs, defStyleAttr), PdfViewAction {
-
-    private var desiredHeight: Int = 0
+) : FrameLayout(context, attrs, defStyleAttr), PdfViewAction {
 
     private val paint = Paint().apply {
         isAntiAlias = true
     }
 
+    private var pageBitmap: Bitmap? = null
+
     init {
         setWillNotDraw(false)
     }
-
-    private var pageBitmap: Bitmap? = null
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
@@ -41,32 +39,32 @@ class PdfView @JvmOverloads constructor(
 
     override fun loadPdfPage(block: () -> Bitmap) {
         pageBitmap = block()
-        val requireWidth = context.resources.displayMetrics.widthPixels
-        var requireHeight = 0
+        invalidate()
+    }
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
 
         pageBitmap?.let {
-            requireHeight = (requireWidth * it.height) / it.width
-            val scaledBitmap =
-                Bitmap.createScaledBitmap(it, requireWidth, requireHeight, true)
+            val heightMode = MeasureSpec.getMode(heightMeasureSpec)
+            val heightSize = MeasureSpec.getSize(heightMeasureSpec)
 
-            pageBitmap = scaledBitmap
+            val height = when (heightMode) {
+                MeasureSpec.EXACTLY -> heightSize
+                MeasureSpec.AT_MOST -> it.height
+                else -> it.height
+            }
 
-            desiredHeight = scaledBitmap.height + 10
+
+            setMeasuredDimension(
+                MeasureSpec.getSize(widthMeasureSpec), height + PAGE_DIVIDER
+            )
+
         }
 
     }
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-
-        val heightMode = MeasureSpec.getMode(heightMeasureSpec)
-        val heightSize = MeasureSpec.getSize(heightMeasureSpec)
-
-        val height = when (heightMode) {
-            MeasureSpec.EXACTLY -> heightSize
-            MeasureSpec.AT_MOST -> desiredHeight
-            else -> desiredHeight
-        }
-
-        setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), height)
+    companion object {
+        private const val PAGE_DIVIDER = 10
     }
 }
