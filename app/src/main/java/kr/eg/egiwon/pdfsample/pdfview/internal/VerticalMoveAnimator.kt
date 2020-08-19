@@ -4,9 +4,10 @@ import android.animation.ObjectAnimator
 import android.graphics.Rect
 import android.view.View
 import androidx.annotation.VisibleForTesting
-import androidx.dynamicanimation.animation.FlingAnimation
-import androidx.dynamicanimation.animation.FloatPropertyCompat
-import androidx.dynamicanimation.animation.SpringAnimation
+import androidx.dynamicanimation.animation.*
+import kr.eg.egiwon.pdfsample.pdfview.internal.MoveAnimator.Companion.DAMPING_RATIO
+import kr.eg.egiwon.pdfsample.pdfview.internal.MoveAnimator.Companion.FRICTION
+import kr.eg.egiwon.pdfsample.pdfview.internal.MoveAnimator.Companion.STIFFNESS
 
 class VerticalMoveAnimator @VisibleForTesting constructor(
     private val targetView: View,
