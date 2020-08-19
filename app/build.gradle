@@ -59,6 +59,9 @@ dependencies {
     implementation "com.google.dagger:hilt-android:$hiltVersion"
     kapt "com.google.dagger:hilt-android-compiler:$hiltVersion"
 
+    // Dynamic Animation
+    implementation 'androidx.dynamicanimation:dynamicanimation:1.1.0-alpha03'
+
     // fragment ktx
     implementation "androidx.fragment:fragment-ktx:1.2.5"
 
