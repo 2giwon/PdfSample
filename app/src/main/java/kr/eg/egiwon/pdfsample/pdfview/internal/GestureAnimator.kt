@@ -4,8 +4,8 @@ import android.graphics.RectF
 import android.view.View
 
 class GestureAnimator(
-    private val horizontalAnimator: MoveAnimator,
-    private val verticalAnimator: MoveAnimator,
+//    private val horizontalAnimator: MoveAnimator,
+//    private val verticalAnimator: MoveAnimator,
     private val scaleAnimator: ScaleAnimator
 ) : ActionListener {
 
@@ -18,18 +18,18 @@ class GestureAnimator(
     }
 
     override fun onMoved(dx: Float, dy: Float) {
-        horizontalAnimator.move(dx)
-        verticalAnimator.move(dy)
+//        horizontalAnimator.move(dx)
+//        verticalAnimator.move(dy)
     }
 
     override fun onFling(velocityX: Float, velocityY: Float) {
-        horizontalAnimator.fling(velocityX)
-        verticalAnimator.fling(velocityY)
+//        horizontalAnimator.fling(velocityX)
+//        verticalAnimator.fling(velocityY)
     }
 
     override fun onMoveEnded() {
-        horizontalAnimator.adjust()
-        verticalAnimator.adjust()
+//        horizontalAnimator.adjust()
+//        verticalAnimator.adjust()
     }
 
     companion object {
@@ -56,7 +56,7 @@ class GestureAnimator(
                     maxScale = scale
                 )
 
-                GestureAnimator(horizontalMoveAnimator, verticalMoveAnimator, scaleAnimator)
+                GestureAnimator(/*horizontalMoveAnimator, verticalMoveAnimator, */scaleAnimator)
             }
 
     }

@@ -1,5 +1,7 @@
 package kr.eg.egiwon.pdfsample.pdfview.internal
 
+import androidx.dynamicanimation.animation.SpringForce
+
 interface MoveAnimator {
 
     fun move(delta: Float)

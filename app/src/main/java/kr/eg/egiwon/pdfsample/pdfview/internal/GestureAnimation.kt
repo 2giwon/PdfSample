@@ -5,8 +5,9 @@ import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
 import androidx.core.view.GestureDetectorCompat
+import javax.inject.Inject
 
-class GestureAnimation(
+class GestureAnimation @Inject constructor(
     private val view: View,
     private val actionListener: ActionListener
 ) {

@@ -2,9 +2,13 @@ package kr.eg.egiwon.pdfsample.pdfview.internal
 
 import android.animation.ObjectAnimator
 import android.view.View
-import androidx.annotation.VisibleForTesting
+import android.view.animation.DecelerateInterpolator
+import kr.eg.egiwon.pdfsample.pdfview.internal.ScaleAnimator.Companion.ADJUSTING_DURATION
+import kr.eg.egiwon.pdfsample.pdfview.internal.ScaleAnimator.Companion.ADJUSTING_FACTOR
+import kr.eg.egiwon.pdfsample.pdfview.internal.ScaleAnimator.Companion.ORIGINAL_SCALE
+import javax.inject.Inject
 
-class ScaleAnimatorImpl @VisibleForTesting constructor(
+class ScaleAnimatorImpl @Inject constructor(
     private val targetView: View,
     private val maxScale: Float,
     private val animatorX: ObjectAnimator,
