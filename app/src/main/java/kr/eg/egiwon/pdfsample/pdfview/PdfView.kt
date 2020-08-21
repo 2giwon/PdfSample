@@ -55,7 +55,6 @@ class PdfView @JvmOverloads constructor(
                 else -> it.height
             }
 
-
             setMeasuredDimension(
                 MeasureSpec.getSize(widthMeasureSpec), height + PAGE_DIVIDER
             )
