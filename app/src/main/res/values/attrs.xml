@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <attr name="pdfview_background_alpha" format="fraction" />
+
+    <declare-styleable name="ScaledView">
+        <attr name="pdf_max_scale" format="float" />
+        <attr name="pdf_frame_width_percent" format="fraction" />
+        <attr name="pdf_frame_height_percent" format="fraction" />
+        <attr name="pdfview_background_alpha" />
+    </declare-styleable>
+</resources>
