@@ -19,22 +19,33 @@
         <kr.eg.egiwon.pdfsample.pdfview.ScaledView
             android:id="@+id/view_scaled"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            app:pdf_frame_height_percent="100%"
+            app:pdf_frame_width_percent="100%"
+            app:pdf_max_scale="15.0"
+            app:pdfview_background_alpha="100%">
 
-            <kr.eg.egiwon.pdfsample.pdfview.PdfPageView
-                android:id="@+id/pdf_page_view"
+            <kr.eg.egiwon.pdfsample.pdfview.PdfScaledOverlay
+                android:id="@+id/pdf_scaled_overlay"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rv_pdf"
+                <kr.eg.egiwon.pdfsample.pdfview.PdfPageView
+                    android:id="@+id/pdf_page_view"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    app:layoutManager="LinearLayoutManager"
-                    app:replaceItems="@{vm.pdfPages}"
-                    tools:listitem="@layout/item_pdf_page" />
+                    android:layout_height="match_parent">
 
-            </kr.eg.egiwon.pdfsample.pdfview.PdfPageView>
+                    <kr.eg.egiwon.pdfsample.pdfview.PdfRecyclerView
+                        android:id="@+id/rv_pdf"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        app:layoutManager="LinearLayoutManager"
+                        app:replaceItems="@{vm.pdfPages}"
+                        tools:listitem="@layout/item_pdf_page" />
+
+                </kr.eg.egiwon.pdfsample.pdfview.PdfPageView>
+
+            </kr.eg.egiwon.pdfsample.pdfview.PdfScaledOverlay>
 
         </kr.eg.egiwon.pdfsample.pdfview.ScaledView>
 

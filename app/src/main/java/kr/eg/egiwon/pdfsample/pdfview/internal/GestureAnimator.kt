@@ -37,19 +37,19 @@ class GestureAnimator(
 
         fun getInstance(target: View, frame: RectF, scale: Float): GestureAnimator =
             run {
-                val horizontalMoveAnimator = HorizontalMoveAnimator(
-                    targetView = target,
-                    leftBound = frame.left,
-                    rightBound = frame.right,
-                    maxScale = scale
-                )
-
-                val verticalMoveAnimator = VerticalMoveAnimator(
-                    targetView = target,
-                    topBound = frame.top,
-                    bottomBound = frame.bottom,
-                    maxScale = scale
-                )
+//                val horizontalMoveAnimator = HorizontalMoveAnimator(
+//                    targetView = target,
+//                    leftBound = frame.left,
+//                    rightBound = frame.right,
+//                    maxScale = scale
+//                )
+//
+//                val verticalMoveAnimator = VerticalMoveAnimator(
+//                    targetView = target,
+//                    topBound = frame.top,
+//                    bottomBound = frame.bottom,
+//                    maxScale = scale
+//                )
 
                 val scaleAnimator = ScaleAnimatorImpl(
                     targetView = target,

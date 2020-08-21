@@ -65,7 +65,7 @@ class GestureAnimation @Inject constructor(
     fun start() {
         @Suppress("ClickableViewAccessibility")
         view.setOnTouchListener { _, event ->
-            gestureDetector.onTouchEvent(event)
+//            gestureDetector.onTouchEvent(event)
             scaleGestureDetector.onTouchEvent(event)
             when (event.action) {
                 MotionEvent.ACTION_UP -> actionListener.onMoveEnded()
