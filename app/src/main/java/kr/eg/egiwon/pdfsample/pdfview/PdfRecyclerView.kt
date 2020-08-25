@@ -11,8 +11,25 @@ class PdfRecyclerView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : RecyclerView(context, attrs, defStyleAttr) {
 
+    private var isScaled = false
+
     @Suppress("ClickableViewAccessibility")
-    override fun onTouchEvent(e: MotionEvent?): Boolean {
-        return false
+    override fun onTouchEvent(e: MotionEvent): Boolean {
+//        return false
+        return when (e.actionMasked and MotionEvent.ACTION_MASK) {
+            MotionEvent.ACTION_POINTER_DOWN,
+            MotionEvent.ACTION_POINTER_UP -> {
+                isScaled = true
+                !isScaled
+            }
+            MotionEvent.ACTION_DOWN -> super.onTouchEvent(e)
+            MotionEvent.ACTION_UP -> {
+                val ret = if (isScaled) false else super.onTouchEvent(e)
+                isScaled = false
+                ret
+            }
+            MotionEvent.ACTION_MOVE -> if (isScaled) false else super.onTouchEvent(e)
+            else -> super.onTouchEvent(e)
+        }
     }
 }
