@@ -3,13 +3,9 @@ package kr.eg.egiwon.pdfsample.pdfview
 import android.content.Context
 import android.graphics.RectF
 import android.util.AttributeSet
-import android.view.ViewTreeObserver
 import androidx.constraintlayout.widget.ConstraintLayout
 import io.reactivex.disposables.CompositeDisposable
-import kotlinx.android.synthetic.main.activity_pdf.view.*
 import kr.eg.egiwon.pdfsample.R
-import kr.eg.egiwon.pdfsample.pdfview.internal.GestureAnimation
-import kr.eg.egiwon.pdfsample.pdfview.internal.GestureAnimator
 
 class ScaledView @JvmOverloads constructor(
     context: Context,
@@ -21,8 +17,8 @@ class ScaledView @JvmOverloads constructor(
 
     private val compositeDisposable: CompositeDisposable by lazy(::CompositeDisposable)
 
-    private val pdfPageView: PdfPageView by lazy { pdf_page_view }
-    private val pdfScaledOverlay: PdfScaledOverlay by lazy { pdf_scaled_overlay }
+//    private val pdfPageView: PdfPageView by lazy { pdf_page_view }
+//    private val pdfScaledOverlay: PdfScaledOverlay by lazy { pdf_scaled_overlay }
 
     init {
 
@@ -62,17 +58,17 @@ class ScaledView @JvmOverloads constructor(
             typeArray.recycle()
         }
 
-        viewTreeObserver.addOnPreDrawListener(object : ViewTreeObserver.OnPreDrawListener {
-            override fun onPreDraw(): Boolean {
-                animatorStart(percentWidth, percentHeight, scale)
-                when {
-                    viewTreeObserver.isAlive -> viewTreeObserver.removeOnPreDrawListener(this)
-                    else -> pdfScaledOverlay.viewTreeObserver.removeOnPreDrawListener(this)
-                }
-                return true
-            }
-
-        })
+//        viewTreeObserver.addOnPreDrawListener(object : ViewTreeObserver.OnPreDrawListener {
+//            override fun onPreDraw(): Boolean {
+//                animatorStart(percentWidth, percentHeight, scale)
+//                when {
+//                    viewTreeObserver.isAlive -> viewTreeObserver.removeOnPreDrawListener(this)
+//                    else -> pdfScaledOverlay.viewTreeObserver.removeOnPreDrawListener(this)
+//                }
+//                return true
+//            }
+//
+//        })
     }
 
     override fun onDetachedFromWindow() {
@@ -92,15 +88,15 @@ class ScaledView @JvmOverloads constructor(
             (totalHeight + frameHeight) / 2f
         )
 
-        pdfPageView.setFrame(frame)
-        pdfPageView.requestLayout()
-        pdfScaledOverlay.setFrame(frame)
-        pdfScaledOverlay.requestLayout()
+//        pdfPageView.setFrame(frame)
+//        pdfPageView.requestLayout()
+//        pdfScaledOverlay.setFrame(frame)
+//        pdfScaledOverlay.requestLayout()
         frameCache = frame
 
-        val animator = GestureAnimator.getInstance(pdfPageView, frame, scale)
-        val animation = GestureAnimation(pdfScaledOverlay, animator)
-        animation.start()
+//        val animator = GestureAnimator.getInstance(pdfPageView, frame, scale)
+//        val animation = GestureAnimation(pdfScaledOverlay, animator)
+//        animation.start()
     }
 
     companion object {

@@ -6,7 +6,6 @@ import androidx.activity.viewModels
 import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.DividerItemDecoration
 import dagger.hilt.android.AndroidEntryPoint
-import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.subjects.BehaviorSubject
 import kr.eg.egiwon.pdfsample.BR
@@ -26,8 +25,6 @@ class MainActivity :
     override val viewModel: FileBrowserViewModel by viewModels()
 
     private val behaviorSubject = BehaviorSubject.createDefault(0L)
-
-    private val compositeDisposable = CompositeDisposable()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

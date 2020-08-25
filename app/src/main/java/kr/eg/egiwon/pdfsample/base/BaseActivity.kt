@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.lifecycle.Observer
+import io.reactivex.disposables.CompositeDisposable
 
 abstract class BaseActivity<VDB : ViewDataBinding, VM : BaseViewModel>(
     @LayoutRes private val layoutResId: Int
@@ -16,6 +17,8 @@ abstract class BaseActivity<VDB : ViewDataBinding, VM : BaseViewModel>(
 
     protected lateinit var binding: VDB
         private set
+
+    protected val compositeDisposable by lazy(::CompositeDisposable)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,6 +32,11 @@ abstract class BaseActivity<VDB : ViewDataBinding, VM : BaseViewModel>(
         viewModel.errorThrowableLiveData.observe(this, Observer {
             showToast(it.message ?: return@Observer)
         })
+    }
+
+    override fun onDestroy() {
+        compositeDisposable.dispose()
+        super.onDestroy()
     }
 
     protected fun bind(action: VDB.() -> Unit) {

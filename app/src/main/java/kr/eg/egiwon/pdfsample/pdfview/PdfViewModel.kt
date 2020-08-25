@@ -26,6 +26,9 @@ class PdfViewModel @ViewModelInject constructor(
     private val _pdfPages = MutableLiveData<List<PdfPage>>()
     val pdfPages: LiveData<List<PdfPage>> get() = _pdfPages
 
+    private val _pdfPage = MutableLiveData<PdfPage>()
+    val pdfPage: LiveData<PdfPage> get() = _pdfPage
+
     private val _isShowLoadingBar = MutableLiveData<Boolean>()
     val isShowLoadingBar: LiveData<Boolean> get() = _isShowLoadingBar
 
@@ -59,8 +62,9 @@ class PdfViewModel @ViewModelInject constructor(
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
                 onNext = {
-                    pdfPageList.add(PdfPage(pageNum, it, pageNum++))
-                    _pdfPages.value = pdfPageList
+                    val pdfPage = PdfPage(pageNum, it, pageNum++)
+                    pdfPageList.add(pdfPage)
+                    _pdfPage.value = pdfPage
                 },
                 onError = {
                     errorThrowableMutableLiveData.value = it
