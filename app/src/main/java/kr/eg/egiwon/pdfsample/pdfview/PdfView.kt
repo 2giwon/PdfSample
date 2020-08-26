@@ -39,7 +39,7 @@ class PdfView @JvmOverloads constructor(
 
     override fun loadPdfPage(block: () -> Bitmap) {
         pageBitmap = block()
-        requestLayout()
+        invalidate()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {

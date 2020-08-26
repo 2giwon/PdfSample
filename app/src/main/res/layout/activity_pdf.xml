@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
@@ -15,17 +16,15 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <ScrollView
-            android:id="@+id/pdf_page_view"
+        <kr.eg.egiwon.pdfsample.pdfview.PdfRecyclerView
+            android:id="@+id/rv_pdf"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <kr.eg.egiwon.pdfsample.pdfview.PdfView
-                android:id="@+id/pdf_view"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-        </ScrollView>
+            android:layout_height="match_parent"
+            android:scrollbarFadeDuration="1000"
+            android:scrollbars="vertical"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:replaceItems="@{vm.pdfPages}"
+            tools:listitem="@layout/item_pdf_page" />
 
         <ProgressBar
             android:id="@+id/progress_bar"
