@@ -8,6 +8,8 @@ import androidx.recyclerview.widget.RecyclerView
 import kr.eg.egiwon.pdfsample.pdfview.internal.ActionListener
 import kr.eg.egiwon.pdfsample.pdfview.internal.ScaleAnimator
 import kr.eg.egiwon.pdfsample.pdfview.internal.ScaleAnimatorImpl
+import kotlin.math.max
+import kotlin.math.min
 
 class PdfRecyclerView @JvmOverloads constructor(
     context: Context,
@@ -16,6 +18,8 @@ class PdfRecyclerView @JvmOverloads constructor(
 ) : RecyclerView(context, attrs, defStyleAttr), ActionListener {
 
     private var isScaled = false
+
+    private var scaleFactor = 1.0f
 
     private val scaleAnimator: ScaleAnimator = ScaleAnimatorImpl(
         this, DEFAULT_MAX_SCALE
@@ -30,7 +34,9 @@ class PdfRecyclerView @JvmOverloads constructor(
             }
 
             override fun onScale(detector: ScaleGestureDetector): Boolean {
-                this@PdfRecyclerView.onScaled(detector.scaleFactor)
+                scaleFactor *= detector.scaleFactor
+                scaleFactor = max(0.1f, min(scaleFactor, 5.0f))
+                this@PdfRecyclerView.onScaled(scaleFactor)
                 return true
             }
         }

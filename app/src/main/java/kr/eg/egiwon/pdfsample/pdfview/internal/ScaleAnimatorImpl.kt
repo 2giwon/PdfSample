@@ -1,6 +1,7 @@
 package kr.eg.egiwon.pdfsample.pdfview.internal
 
 import android.animation.ObjectAnimator
+import android.util.Log
 import android.view.View
 import android.view.animation.DecelerateInterpolator
 import kr.eg.egiwon.pdfsample.pdfview.internal.ScaleAnimator.Companion.ADJUSTING_DURATION
@@ -50,12 +51,14 @@ class ScaleAnimatorImpl @Inject constructor(
     }
 
     override fun adjust() {
+        Log.e("Leegiwon", "ScaleAnimator adjust targetView.scaleX ${targetView.scaleX}")
         if (targetView.scaleX < ORIGINAL_SCALE) {
             animatorX.scaleX(ORIGINAL_SCALE)
         } else if (maxScale < targetView.scaleX) {
             animatorX.scaleY(maxScale)
         }
 
+        Log.e("Leegiwon", "ScaleAnimator adjust targetView.scaleY ${targetView.scaleY}")
         if (targetView.scaleY < ORIGINAL_SCALE) {
             animatorY.scaleY(ORIGINAL_SCALE)
         } else if (maxScale < targetView.scaleY) {
