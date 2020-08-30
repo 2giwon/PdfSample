@@ -62,9 +62,10 @@ class PdfViewModel @ViewModelInject constructor(
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
                 onNext = {
-
-                    pdfPageList.add(PdfPage(pageNum, it, pageNum++))
-                    _pdfPages.value = pdfPageList
+                    val pdfPage = PdfPage(pageNum, it, pageNum++)
+                    pdfPageList.add(pdfPage)
+                    _pdfPage.value = pdfPage
+//                    _pdfPages.value = pdfPageList
                 },
                 onError = {
                     errorThrowableMutableLiveData.value = it
