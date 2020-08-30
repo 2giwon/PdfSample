@@ -3,12 +3,12 @@ package kr.eg.egiwon.pdfsample.pdfview
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.viewModels
-import androidx.lifecycle.Observer
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
+import kr.eg.egiwon.pdfsample.EventObserver
 import kr.eg.egiwon.pdfsample.R
 import kr.eg.egiwon.pdfsample.base.BaseActivity
 import kr.eg.egiwon.pdfsample.databinding.ActivityPdfBinding
@@ -42,7 +42,7 @@ class PdfViewActivity : BaseActivity<ActivityPdfBinding, PdfViewModel>(
 
     override fun addObserve() {
         super.addObserve()
-        viewModel.pdfPage.observe(this, Observer {
+        viewModel.pdfPage.observe(this, EventObserver {
             binding.pdfPageView.addPdfPage(it)
         })
     }
