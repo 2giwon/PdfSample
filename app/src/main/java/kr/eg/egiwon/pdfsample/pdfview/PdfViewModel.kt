@@ -11,7 +11,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
-import kr.eg.egiwon.pdfsample.Event
 import kr.eg.egiwon.pdfsample.base.BaseViewModel
 import kr.eg.egiwon.pdfsample.pdfcore.PdfReadable
 import kr.eg.egiwon.pdfsample.pdfview.model.PdfPage
@@ -27,8 +26,8 @@ class PdfViewModel @ViewModelInject constructor(
     private val _pdfPages = MutableLiveData<List<PdfPage>>()
     val pdfPages: LiveData<List<PdfPage>> get() = _pdfPages
 
-    private val _pdfPage = MutableLiveData<Event<PdfPage>>()
-    val pdfPage: LiveData<Event<PdfPage>> get() = _pdfPage
+    private val _pdfPage = MutableLiveData<PdfPage>()
+    val pdfPage: LiveData<PdfPage> get() = _pdfPage
 
     private val _isShowLoadingBar = MutableLiveData<Boolean>()
     val isShowLoadingBar: LiveData<Boolean> get() = _isShowLoadingBar
@@ -65,7 +64,7 @@ class PdfViewModel @ViewModelInject constructor(
                 onNext = {
                     val pdfPage = PdfPage(pageNum, it, pageNum++)
                     pdfPageList.add(pdfPage)
-                    _pdfPage.value = Event(pdfPage)
+                    _pdfPage.value = pdfPage
 //                    _pdfPages.value = pdfPageList
                 },
                 onError = {
