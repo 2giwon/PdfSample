@@ -3,6 +3,4 @@
     <color name="colorPrimary">#C60000</color>
     <color name="colorPrimaryDark">#f85c5d</color>
     <color name="colorAccent">#D89797</color>
-
-    <color name="doc_bg_color">#FFf5f5f5</color>
 </resources>
