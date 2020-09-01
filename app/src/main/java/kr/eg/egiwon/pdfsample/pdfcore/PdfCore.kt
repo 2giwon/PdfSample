@@ -30,7 +30,8 @@ class PdfCore @Inject constructor(context: Context) : PdfReadable {
                 0,
                 0,
                 width,
-                height
+                height,
+                true
             )
 
             return documentBitmap
