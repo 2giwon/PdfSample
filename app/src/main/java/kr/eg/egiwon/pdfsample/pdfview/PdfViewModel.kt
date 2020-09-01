@@ -14,19 +14,12 @@ import kr.eg.egiwon.pdfsample.Event
 import kr.eg.egiwon.pdfsample.base.BaseViewModel
 import kr.eg.egiwon.pdfsample.pdfcore.PdfReadable
 import kr.eg.egiwon.pdfsample.pdfview.model.PdfPage
-import kr.eg.egiwon.pdfsample.pdfview.setup.PdfSetupManager
-import kr.eg.egiwon.pdfsample.pdfview.setup.PdfSetupManagerImpl
-import kr.eg.egiwon.pdfsample.util.DefaultSetting
 import kr.eg.egiwon.pdfsample.util.Size
 
 
 class PdfViewModel @ViewModelInject constructor(
-    private val pdfReadable: PdfReadable,
-    private val defaultSetting: DefaultSetting
+    private val pdfReadable: PdfReadable
 ) : BaseViewModel() {
-
-    private val _isOpenDocument = MutableLiveData<Event<Boolean>>()
-    val isOpenDocument: LiveData<Event<Boolean>> get() = _isOpenDocument
 
     private val _pdfPages = MutableLiveData<List<PdfPage>>()
     val pdfPages: LiveData<List<PdfPage>> get() = _pdfPages
@@ -40,36 +33,22 @@ class PdfViewModel @ViewModelInject constructor(
     private val _pageCount = MutableLiveData<Event<Int>>()
     val pageCount: LiveData<Event<Int>> get() = _pageCount
 
-    private val _pageSize = MutableLiveData<Event<Size<Int>>>()
-    val pageSize: LiveData<Event<Size<Int>>> get() = _pageSize
+    private val _pageSize = MutableLiveData<Event<Size>>()
+    val pageSize: LiveData<Event<Size>> get() = _pageSize
 
     private val pdfPageList = mutableListOf<PdfPage>()
 
-    private val pageSetupManager: PdfSetupManager by lazy {
-        PdfSetupManagerImpl(pdfReadable, compositeDisposable, defaultSetting)
-    }
-
     fun loadPdfDocument(fd: ParcelFileDescriptor) {
-        Single.fromCallable {
-            pdfReadable.openPdfDocument(fd)
-
-        }.subscribeOn(Schedulers.single())
-            .doOnSubscribe { _isShowLoadingBar.postValue(true) }
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                _isOpenDocument.value = Event(it)
-            }.addTo(compositeDisposable)
-    }
-
-    fun requestPageSetup(viewSize: Size<Int>) {
-        pageSetupManager.pageSetup(viewSize,
-            getPageCount = {
-                _pageCount.postValue(Event(it))
-            },
-            setupComplete = {
-                _isShowLoadingBar.postValue(false)
+        val isOpened = pdfReadable.openPdfDocument(fd)
+        if (isOpened) {
+            val pageCount = pdfReadable.getPageCount()
+            if (pageCount > 0) {
+                _pageCount.value = Event(pageCount)
+                requestPageSize(0)
             }
-        )
+
+            loadPdfBitmaps()
+        }
     }
 
     private fun loadPdfBitmaps() {
