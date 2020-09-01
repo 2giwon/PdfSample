@@ -41,18 +41,17 @@ class PdfCore @Inject constructor(context: Context) : PdfReadable {
 
     override fun getPageCount(): Int = pdfCore.getPageCount(pdfDocument)
 
-    override fun getPageSize(pageNum: Int): Size<Int> {
+    override fun getPageSize(pageNum: Int): Size {
         pdfCore.openPage(pdfDocument, pageNum)
-        return Size(
-            pdfCore.getPageWidth(pdfDocument, pageNum),
+
+        val size = pdfCore.getPageWidth(pdfDocument, pageNum) to
             pdfCore.getPageHeight(pdfDocument, pageNum)
-        )
+        return Size(size.first, size.second)
     }
 
     override fun openPdfDocument(fd: ParcelFileDescriptor): Boolean {
         runCatching {
-            pdfDocument = pdfCore.newDocument(fd, null)
-
+            pdfDocument = pdfCore.newDocument(fd)
         }.onSuccess {
             printInfo(pdfCore, pdfDocument)
             return true
