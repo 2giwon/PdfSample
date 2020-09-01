@@ -6,7 +6,6 @@ import android.os.ParcelFileDescriptor
 import android.util.Log
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
-import kr.eg.egiwon.pdfsample.util.Size
 import javax.inject.Inject
 
 class PdfCore @Inject constructor(context: Context) : PdfReadable {
@@ -14,11 +13,12 @@ class PdfCore @Inject constructor(context: Context) : PdfReadable {
     private val pdfCore: PdfiumCore = PdfiumCore(context)
     private lateinit var pdfDocument: PdfDocument
 
+
     override fun loadPdfBitmap(pageNum: Int): Bitmap? {
         try {
             pdfCore.openPage(pdfDocument, pageNum)
-            val width = pdfCore.getPageWidth(pdfDocument, pageNum)
-            val height = pdfCore.getPageHeight(pdfDocument, pageNum)
+            val width = pdfCore.getPageWidthPoint(pdfDocument, pageNum)
+            val height = pdfCore.getPageHeightPoint(pdfDocument, pageNum)
 
             val documentBitmap =
                 Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
@@ -30,7 +30,8 @@ class PdfCore @Inject constructor(context: Context) : PdfReadable {
                 0,
                 0,
                 width,
-                height
+                height,
+                true
             )
 
             return documentBitmap
@@ -40,14 +41,6 @@ class PdfCore @Inject constructor(context: Context) : PdfReadable {
     }
 
     override fun getPageCount(): Int = pdfCore.getPageCount(pdfDocument)
-
-    override fun getPageSize(pageNum: Int): Size {
-        pdfCore.openPage(pdfDocument, pageNum)
-
-        val size = pdfCore.getPageWidth(pdfDocument, pageNum) to
-            pdfCore.getPageHeight(pdfDocument, pageNum)
-        return Size(size.first, size.second)
-    }
 
     override fun openPdfDocument(fd: ParcelFileDescriptor): Boolean {
         runCatching {
