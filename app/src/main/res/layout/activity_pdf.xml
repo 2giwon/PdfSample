@@ -25,16 +25,12 @@
         <!--            app:replaceItems="@{vm.pdfPages}"-->
         <!--            tools:listitem="@layout/item_pdf_page" />-->
 
-        <ScrollView
+        <kr.eg.egiwon.pdfsample.pdfview.PdfPageView
+            android:id="@+id/pdf_page_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:background="@color/doc_bg_color" />
 
-            <kr.eg.egiwon.pdfsample.pdfview.PdfPageView
-                android:id="@+id/pdf_page_view"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-        </ScrollView>
 
         <ProgressBar
             android:id="@+id/progress_bar"

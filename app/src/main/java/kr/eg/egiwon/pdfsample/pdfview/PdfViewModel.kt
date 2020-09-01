@@ -1,6 +1,5 @@
 package kr.eg.egiwon.pdfsample.pdfview
 
-import android.graphics.Bitmap
 import android.os.ParcelFileDescriptor
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
@@ -15,14 +14,12 @@ import kr.eg.egiwon.pdfsample.Event
 import kr.eg.egiwon.pdfsample.base.BaseViewModel
 import kr.eg.egiwon.pdfsample.pdfcore.PdfReadable
 import kr.eg.egiwon.pdfsample.pdfview.model.PdfPage
+import kr.eg.egiwon.pdfsample.util.Size
 
 
 class PdfViewModel @ViewModelInject constructor(
     private val pdfReadable: PdfReadable
 ) : BaseViewModel() {
-
-    private val _isOpenDocument = MutableLiveData<Boolean>()
-    val isOpenDocument: LiveData<Boolean> get() = _isOpenDocument
 
     private val _pdfPages = MutableLiveData<List<PdfPage>>()
     val pdfPages: LiveData<List<PdfPage>> get() = _pdfPages
@@ -33,47 +30,62 @@ class PdfViewModel @ViewModelInject constructor(
     private val _isShowLoadingBar = MutableLiveData<Boolean>()
     val isShowLoadingBar: LiveData<Boolean> get() = _isShowLoadingBar
 
-    private var _pageCount = 0
+    private val _pageCount = MutableLiveData<Event<Int>>()
+    val pageCount: LiveData<Event<Int>> get() = _pageCount
+
+    private val _pageSize = MutableLiveData<Event<Size>>()
+    val pageSize: LiveData<Event<Size>> get() = _pageSize
 
     private val pdfPageList = mutableListOf<PdfPage>()
-    private var pageNum = 0
 
     fun loadPdfDocument(fd: ParcelFileDescriptor) {
         val isOpened = pdfReadable.openPdfDocument(fd)
         if (isOpened) {
-            _pageCount = pdfReadable.getPageCount()
+            val pageCount = pdfReadable.getPageCount()
+            if (pageCount > 0) {
+                _pageCount.value = Event(pageCount)
+                requestPageSize(0)
+            }
+
             loadPdfBitmaps()
         }
-        _isOpenDocument.value = isOpened
     }
 
     private fun loadPdfBitmaps() {
-        Observable.fromIterable(0 until _pageCount)
-            .doOnSubscribe { _isShowLoadingBar.postValue(true) }
-            .doAfterTerminate { _isShowLoadingBar.postValue(false) }
-            .subscribeOn(Schedulers.single())
-            .concatMapEager { pageNum ->
-                Single.create<Bitmap> { emitter ->
-                    pdfReadable.loadPdfBitmap(pageNum)?.let {
-                        emitter.onSuccess(it)
-                    }
-                }.toObservable()
-
-            }
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy(
-                onNext = {
-                    val pdfPage = PdfPage(pageNum, it, pageNum++)
-                    pdfPageList.add(pdfPage)
-                    _pdfPage.value = Event(pdfPage)
-//                    _pdfPages.value = pdfPageList
-                },
-                onError = {
-                    errorThrowableMutableLiveData.value = it
-                },
-                onComplete = {
-                    pdfReadable.closeDocument()
+        _pageCount.value?.let { pageCount ->
+            Observable.fromIterable(0 until pageCount.peekContent())
+                .doOnSubscribe { _isShowLoadingBar.postValue(true) }
+                .doAfterTerminate { _isShowLoadingBar.postValue(false) }
+                .subscribeOn(Schedulers.single())
+                .concatMapEager { pageNum ->
+                    Single.create<PdfPage> { emitter ->
+                        pdfReadable.loadPdfBitmap(pageNum)?.let { documentBitmap ->
+                            val size = pdfReadable.getPageSize(pageNum)
+                            val pdfPage =
+                                PdfPage(pageNum, documentBitmap, pageNum, size.width, size.height)
+                            emitter.onSuccess(pdfPage)
+                        }
+                    }.toObservable()
                 }
-            ).addTo(compositeDisposable)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeBy(
+                    onNext = { pdfPage ->
+                        pdfPageList.add(pdfPage)
+                        _pdfPage.value = Event(pdfPage)
+//                    _pdfPages.value = pdfPageList
+                    },
+                    onError = {
+                        errorThrowableMutableLiveData.value = it
+                    },
+                    onComplete = {
+                        pdfReadable.closeDocument()
+                    }
+                ).addTo(compositeDisposable)
+        }
+
+    }
+
+    fun requestPageSize(pageNum: Int) {
+        _pageSize.value = Event(pdfReadable.getPageSize(pageNum))
     }
 }

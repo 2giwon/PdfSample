@@ -2,6 +2,7 @@ package kr.eg.egiwon.pdfsample.pdfcore
 
 import android.graphics.Bitmap
 import android.os.ParcelFileDescriptor
+import kr.eg.egiwon.pdfsample.util.Size
 
 interface PdfReadable {
 
@@ -12,4 +13,6 @@ interface PdfReadable {
     fun loadPdfBitmap(pageNum: Int): Bitmap?
 
     fun getPageCount(): Int
+
+    fun getPageSize(pageNum: Int): Size
 }
