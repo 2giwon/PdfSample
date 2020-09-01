@@ -13,6 +13,7 @@ import kr.eg.egiwon.pdfsample.R
 import kr.eg.egiwon.pdfsample.base.BaseActivity
 import kr.eg.egiwon.pdfsample.databinding.ActivityPdfBinding
 import kr.eg.egiwon.pdfsample.filebrowser.MainActivity.Companion.OPEN_DOCUMENT_URI
+import kr.eg.egiwon.pdfsample.util.Size
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -26,11 +27,10 @@ class PdfViewActivity : BaseActivity<ActivityPdfBinding, PdfViewModel>(
 
         bind {
             vm = viewModel
-//            initAdapter()
         }
 
         intent.extras?.getString(OPEN_DOCUMENT_URI)?.let { uri ->
-            Single.timer(500, TimeUnit.MILLISECONDS)
+            Single.timer(200, TimeUnit.MILLISECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeBy {
                     loadPdfDocument(uri)
@@ -42,16 +42,21 @@ class PdfViewActivity : BaseActivity<ActivityPdfBinding, PdfViewModel>(
 
     override fun addObserve() {
         super.addObserve()
+        viewModel.isOpenDocument.observe(this, EventObserver { isOpened ->
+            if (isOpened) {
+                val size =
+                    Size(binding.pdfPageView.measuredWidth, binding.pdfPageView.measuredHeight)
+
+                viewModel.requestPageSetup(size)
+            }
+        })
+
         viewModel.pdfPage.observe(this, EventObserver {
             binding.pdfPageView.addPdfPage(it)
         })
 
         viewModel.pageCount.observe(this, EventObserver { pageCount ->
             binding.pdfPageView.setPageCount(pageCount)
-        })
-
-        viewModel.pageSize.observe(this, EventObserver {
-            binding.pdfPageView.setPageHeight(it.height)
         })
     }
 
@@ -64,13 +69,4 @@ class PdfViewActivity : BaseActivity<ActivityPdfBinding, PdfViewModel>(
             .onFailure { throwable -> showToast(throwable.message ?: "") }
     }
 
-//    private fun ActivityPdfBinding.initAdapter() {
-//        rvPdf.adapter = object : BaseAdapter2(
-//            BR.pdfPage,
-//            mapOf(BR.vm to viewModel),
-//            mapOf(PdfPage::class to R.layout.item_pdf_page)
-//
-//        ) {}
-//        rvPdf.setHasFixedSize(true)
-//    }
 }
