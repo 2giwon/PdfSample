@@ -14,5 +14,5 @@ interface PdfReadable {
 
     fun getPageCount(): Int
 
-    fun getPageSize(pageNum: Int): Size<Int>
+    fun getPageSize(pageNum: Int): Size
 }
