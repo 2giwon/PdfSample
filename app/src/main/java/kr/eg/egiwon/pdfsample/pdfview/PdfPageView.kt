@@ -1,7 +1,6 @@
 package kr.eg.egiwon.pdfsample.pdfview
 
 import android.content.Context
-import android.graphics.Canvas
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.MotionEvent
@@ -50,48 +49,13 @@ class PdfPageView @JvmOverloads constructor(
 
     }
 
-    override fun onDraw(canvas: Canvas?) {
-        super.onDraw(canvas)
-        pdfPages.forEach { pdfPage ->
-            canvas?.drawBitmap(
-                pdfPage.pageBitmap,
-                ((measuredWidth - pdfPage.pageBitmap.width) / 2).toFloat(),
-                ((pdfPage.pageBitmap.height + PAGE_DIVIDER) * pdfPage.pageNum).toFloat(),
-                paint
-            )
-        }
-    }
-
     fun addPdfPage(page: PdfPage) {
         pdfPages.add(page)
-//        drawContents()
         postInvalidate()
     }
 
-//    private fun drawContents() {
-//        synchronized(surfaceHolder) {
-//            var canvas: Canvas? = null
-//            try {
-//                canvas = surfaceHolder.lockCanvas()
-//                draw(canvas)
-//
-//            } finally {
-//                if (canvas != null) {
-//                    surfaceHolder.unlockCanvasAndPost(canvas)
-//                }
-//            }
-//        }
-//    }
-
     fun setPageCount(pageCount: Int) {
         this.pageCount = pageCount
-    }
-
-    fun setPageHeight(height: Int) {
-        if (viewHeight <= 0 && pageCount > 0) {
-            viewHeight = (height + PAGE_DIVIDER).toFloat() * pageCount
-            requestLayout()
-        }
     }
 
     private val scaleListener =
@@ -140,6 +104,5 @@ class PdfPageView @JvmOverloads constructor(
 
     companion object {
         private const val DEFAULT_MAX_SCALE = 25f
-        private const val PAGE_DIVIDER = 10
     }
 }
