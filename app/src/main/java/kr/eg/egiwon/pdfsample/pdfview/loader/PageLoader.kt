@@ -103,7 +103,7 @@ class PageLoader(
 
             range = makeRenderingRange(
                 pageFirstXOffset,
-                range,
+                range.page,
                 rowHeight,
                 secondaryOffset,
                 colWidth,
@@ -117,30 +117,30 @@ class PageLoader(
         return renderingRanges
     }
 
-    private fun makeRenderingRange(pageFirstXOffset: Float, range: RenderingRange, rowHeight: Float, secondaryOffset: Float, colWidth: Float, pageLastYOffset: Float, pageLastXOffset: Float): RenderingRange {
+    private fun makeRenderingRange(
+        pageFirstXOffset: Float,
+        page: Int,
+        rowHeight: Float,
+        secondaryOffset: Float,
+        colWidth: Float,
+        pageLastYOffset: Float,
+        pageLastXOffset: Float
+    ): RenderingRange {
         return RenderingRange(
             leftTop = Holder(
                 row = floor(
-                    abs(
-                        pageFirstXOffset - pageSetup.getPageOffset(range.page)
-                    ) / rowHeight
+                    abs(pageFirstXOffset - pageSetup.getPageOffset(page)) / rowHeight
                 ).toInt(),
                 col = floor(
-                    min(
-                        pageFirstXOffset - secondaryOffset,
-                        0f
-                    ) / colWidth
+                    min(pageFirstXOffset - secondaryOffset, 0f) / colWidth
                 ).toInt()
             ),
             rightBottom = Holder(
                 row = ceil(
-                    abs(pageLastYOffset - pageSetup.getPageOffset(range.page)) / rowHeight
+                    abs(pageLastYOffset - pageSetup.getPageOffset(page)) / rowHeight
                 ).toInt(),
                 col = floor(
-                    min(
-                        pageLastXOffset - secondaryOffset,
-                        0f
-                    ) / colWidth
+                    min(pageLastXOffset - secondaryOffset, 0f) / colWidth
                 ).toInt()
             )
         )
