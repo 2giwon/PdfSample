@@ -10,7 +10,14 @@ class DefaultSetting @Inject constructor(context: Context) {
         DEFAULT_DOCUMENT_SPACING.pixelToDP(context)  // dp
     }
 
+    val defaultOffset: Float by lazy {
+        DEFAULT_OFFSET.pixelToDP(context)
+    }
+
+    val defaultPartSize: Float = 256f
+
     companion object {
         private const val DEFAULT_DOCUMENT_SPACING = 10.0f
+        private const val DEFAULT_OFFSET = 20f
     }
 }
