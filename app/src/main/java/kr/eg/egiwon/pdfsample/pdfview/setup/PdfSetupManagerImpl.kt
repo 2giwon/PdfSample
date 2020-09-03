@@ -29,11 +29,13 @@ class PdfSetupManagerImpl(
 
     private var documentLength: Float = 0f
 
-    override fun pageSetup(viewSize: Size<Int>, getPageCount: (Int) -> Unit, setupComplete: () -> Unit) {
-        Single.fromCallable {
-            val pageCount = pdfReadable.getPageCount()
-            getPageCount(pageCount)
+    private val pageCount: Int by lazy(pdfReadable::getPageCount)
 
+    private var zoom = 1f
+
+    override fun pageSetup(viewSize: Size<Int>, onPageCount: (Int) -> Unit, setupComplete: () -> Unit) {
+        Single.fromCallable {
+            onPageCount(pageCount)
             for (i in 0 until pageCount) {
                 val pageSize: Size<Int> = pdfReadable.getPageSize(i)
                 if (pageSize.width > maxPageSize.width) {
@@ -51,6 +53,35 @@ class PdfSetupManagerImpl(
                 setupComplete()
             }.addTo(compositeDisposable)
     }
+
+    override fun getPageAtOffset(offset: Float): Int {
+        var currentPage = 0
+        for (i in 0 until getCurrentDocumentPageCount()) {
+            val tempOffset = pageOffsets[i] * zoom - getPageSpacing(zoom) / 2f
+            if (tempOffset >= offset) {
+                break
+            }
+
+            currentPage++
+        }
+        return if (--currentPage >= 0) currentPage else 0
+    }
+
+    override fun getCurrentDocumentPageCount(): Int = pageCount
+
+    override fun getPageZoom(): Float = zoom
+
+    override fun getPageOffset(pageIndex: Int): Float = pageOffsets[pageIndex] * zoom
+
+    override fun getScaledPageSize(pageIndex: Int): Size<Float> =
+        Size(pageSizes[pageIndex].width * zoom, pageSizes[pageIndex].height * zoom)
+
+    override fun getPageSize(pageIndex: Int): Size<Float> = pageSizes[pageIndex]
+
+    override fun getSecondaryOffset(pageIndex: Int): Float =
+        zoom * (maxPageSize.width - getPageSize(pageIndex).width) / 2
+
+    private fun getPageSpacing(zoom: Float): Float = defaultSetting.defaultDocumentSpacing * zoom
 
     private fun calcPageFitSize(viewSize: Size<Int>) {
         pageSizes.clear()
@@ -99,5 +130,6 @@ class PdfSetupManagerImpl(
             pageOffsets.add(offset)
         }
     }
+
 
 }
