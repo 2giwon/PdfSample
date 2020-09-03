@@ -45,6 +45,9 @@ class PdfViewModel @ViewModelInject constructor(
 
     private val pdfPageList = mutableListOf<PdfPage>()
 
+    private val currentXOffset = 0f
+    private val currentYOffset = 0f
+
     private val pageSetupManager: PdfSetupManager by lazy {
         PdfSetupManagerImpl(pdfReadable, compositeDisposable, defaultSetting)
     }
@@ -63,7 +66,7 @@ class PdfViewModel @ViewModelInject constructor(
 
     fun requestPageSetup(viewSize: Size<Int>) {
         pageSetupManager.pageSetup(viewSize,
-            getPageCount = {
+            onPageCount = {
                 _pageCount.postValue(Event(it))
             },
             setupComplete = {
