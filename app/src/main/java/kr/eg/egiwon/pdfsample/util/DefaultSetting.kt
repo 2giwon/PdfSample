@@ -16,6 +16,8 @@ class DefaultSetting @Inject constructor(context: Context) {
 
     val defaultPartSize: Float = 256f
 
+    val defaultCacheSize = 120
+
     companion object {
         private const val DEFAULT_DOCUMENT_SPACING = 10.0f
         private const val DEFAULT_OFFSET = 20f
