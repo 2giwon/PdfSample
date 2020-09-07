@@ -49,6 +49,10 @@ class PdfCore @Inject constructor(context: Context) : PdfReadable {
         )
     }
 
+    override fun openPage(page: Int) {
+        pdfCore.openPage(pdfDocument, page)
+    }
+
     override fun openPdfDocument(fd: ParcelFileDescriptor): Boolean {
         runCatching {
             pdfDocument = pdfCore.newDocument(fd, null)
