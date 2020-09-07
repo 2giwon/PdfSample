@@ -13,7 +13,11 @@ import io.reactivex.schedulers.Schedulers
 import kr.eg.egiwon.pdfsample.Event
 import kr.eg.egiwon.pdfsample.base.BaseViewModel
 import kr.eg.egiwon.pdfsample.pdfcore.PdfReadable
+import kr.eg.egiwon.pdfsample.pdfview.loader.PageLoadable
+import kr.eg.egiwon.pdfsample.pdfview.loader.PageLoader
 import kr.eg.egiwon.pdfsample.pdfview.model.PdfPage
+import kr.eg.egiwon.pdfsample.pdfview.render.RenderManager
+import kr.eg.egiwon.pdfsample.pdfview.render.Renderer
 import kr.eg.egiwon.pdfsample.pdfview.setup.PdfSetupManager
 import kr.eg.egiwon.pdfsample.pdfview.setup.PdfSetupManagerImpl
 import kr.eg.egiwon.pdfsample.util.DefaultSetting
@@ -52,6 +56,14 @@ class PdfViewModel @ViewModelInject constructor(
         PdfSetupManagerImpl(pdfReadable, compositeDisposable, defaultSetting)
     }
 
+    private val renderer: RenderManager = Renderer(pdfReadable)
+
+    private val pdfLoader: PageLoadable = PageLoader(
+        defaultSetting,
+        pageSetupManager,
+        renderer
+    )
+
     fun loadPdfDocument(fd: ParcelFileDescriptor) {
         Single.fromCallable {
             pdfReadable.openPdfDocument(fd)
@@ -70,9 +82,18 @@ class PdfViewModel @ViewModelInject constructor(
                 _pageCount.postValue(Event(it))
             },
             setupComplete = {
-                _isShowLoadingBar.postValue(false)
+                loadPages(viewSize)
             }
         )
+    }
+
+    private fun loadPages(viewSize: Size<Int>) {
+        pdfLoader.loadPages(viewSize)
+            .subscribeOn(Schedulers.computation())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy {
+
+            }.addTo(compositeDisposable)
     }
 
     private fun loadPdfBitmaps() {

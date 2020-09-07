@@ -1,6 +1,7 @@
 package kr.eg.egiwon.pdfsample.pdfview.setup
 
 import io.reactivex.Single
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
@@ -47,9 +48,10 @@ class PdfSetupManagerImpl(
 
                 originalPageSizes.add(pageSize)
             }
-        }.observeOn(Schedulers.single())
+        }.subscribeOn(Schedulers.single())
+            .map { calcPageFitSize(viewSize) }
+            .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
-                calcPageFitSize(viewSize)
                 setupComplete()
             }.addTo(compositeDisposable)
     }

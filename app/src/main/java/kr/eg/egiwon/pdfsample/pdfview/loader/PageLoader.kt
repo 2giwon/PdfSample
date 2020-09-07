@@ -1,40 +1,137 @@
 package kr.eg.egiwon.pdfsample.pdfview.loader
 
+import android.graphics.RectF
+import io.reactivex.Flowable
 import kr.eg.egiwon.pdfsample.pdfview.model.GridSize
 import kr.eg.egiwon.pdfsample.pdfview.model.Holder
 import kr.eg.egiwon.pdfsample.pdfview.model.RenderingRange
+import kr.eg.egiwon.pdfsample.pdfview.render.RenderManager
+import kr.eg.egiwon.pdfsample.pdfview.render.model.RenderTask
 import kr.eg.egiwon.pdfsample.pdfview.setup.PdfSetupManager
 import kr.eg.egiwon.pdfsample.util.DefaultSetting
 import kr.eg.egiwon.pdfsample.util.Size
+import org.reactivestreams.Subscriber
 import java.util.*
 import kotlin.math.*
 
 class PageLoader(
     private val defaultSetting: DefaultSetting,
-    private val pageSetup: PdfSetupManager
+    private val pageSetup: PdfSetupManager,
+    private val renderer: RenderManager
 ) : PageLoadable {
 
     private var xOffset = 0f
     private var yOffset = 0f
 
-    override fun loadPages(viewSize: Size<Int>) {
-        var partCount = 0
-        xOffset = -0f
-        yOffset = -0f
+    private var pageRelativePartWidth = 0f
+    private var pageRelativePartHeight = 0f
 
-        val preloadOffset = defaultSetting.defaultOffset
-        val firstXOffset = -xOffset + preloadOffset
-        val lastXOffset = -xOffset - viewSize.width - preloadOffset
-        val firstYOffset = -yOffset + preloadOffset
-        val lastYOffset = -yOffset - viewSize.height - preloadOffset
+    private var partRenderWidth = 0f
+    private var partRenderHeight = 0f
 
-        val rangeList: List<RenderingRange> =
-            getRenderingRange(
+    private var cacheOrder = 0
+
+    override fun loadPages(viewSize: Size<Int>): Flowable<RenderTask> {
+        return Flowable.unsafeCreate<RenderTask> { subscriber ->
+            cacheOrder = 1
+            var partCount = 0
+            xOffset = -0f
+            yOffset = -0f
+
+            val preloadOffset = defaultSetting.defaultOffset
+            val firstXOffset = -xOffset + preloadOffset
+            val lastXOffset = -xOffset - viewSize.width - preloadOffset
+            val firstYOffset = -yOffset + preloadOffset
+            val lastYOffset = -yOffset - viewSize.height - preloadOffset
+
+            val rangeList: List<RenderingRange> = getRenderingRange(
                 firstXOffset,
                 firstYOffset,
                 lastXOffset,
                 lastYOffset
             )
+
+            rangeList.forEach {
+                pageRelativePartWidth = calculateRelativePartWidth(it.gridSize)
+                pageRelativePartHeight = calculateRelativePartHeight(it.gridSize)
+                partRenderWidth = calculateRenderWidth(it.gridSize)
+                partRenderHeight = calculateRenderHeight(it.gridSize)
+
+                partCount += loadPage(
+                    it.page,
+                    it.leftTop.row,
+                    it.rightBottom.row,
+                    it.leftTop.col,
+                    it.rightBottom.col,
+                    defaultSetting.defaultCacheSize - partCount,
+                    subscriber
+                )
+                if (partCount >= defaultSetting.defaultCacheSize) return@forEach
+            }
+        }
+    }
+
+    private fun loadPage(
+        page: Int,
+        firstRow: Int,
+        lastRow: Int,
+        firstCol: Int,
+        lastCol: Int,
+        partsLoadable: Int,
+        subscriber: Subscriber<in RenderTask>
+    ): Int {
+
+        var loaded = 0
+        for (row in firstRow..lastRow) {
+            for (col in firstCol..lastCol) {
+                if (loadPart(page, row, col, pageRelativePartWidth, pageRelativePartHeight, subscriber)) {
+                    loaded++
+                }
+                if (loaded >= partsLoadable) {
+                    return loaded
+                }
+            }
+        }
+
+        return loaded
+    }
+
+    private fun loadPart(
+        page: Int,
+        row: Int,
+        col: Int,
+        pageRelativePartWidth: Float,
+        pageRelativePartHeight: Float,
+        subscriber: Subscriber<in RenderTask>
+    ): Boolean {
+
+        val relX = pageRelativePartWidth * col
+        val relY = pageRelativePartHeight * row
+        var partWidth = pageRelativePartWidth
+        var partHeight = pageRelativePartHeight
+
+        var renderWidth = partRenderWidth
+        var renderHeight = partRenderHeight
+        if (relX + partWidth > 1) {
+            partWidth = 1 - relX
+        }
+
+        if (relY + partHeight > 1) {
+            partHeight = 1 - relY
+        }
+        renderWidth *= partWidth
+        renderHeight *= partHeight
+        val boundRect = RectF(relX, relY, relX + partWidth, relY + partHeight)
+
+        if (renderWidth > 0 && renderHeight > 0) {
+            subscriber.onNext(renderer.createRenderTask(
+                page, renderWidth, renderHeight, boundRect, cacheOrder, false
+            ))
+            cacheOrder++
+            return true
+        }
+
+        return false
     }
 
     private fun getRenderingRange(
@@ -158,4 +255,13 @@ class PageLoader(
         )
     }
 
+    private fun calculateRelativePartWidth(gridSize: GridSize): Float = 1f / gridSize.cols
+
+    private fun calculateRelativePartHeight(gridSize: GridSize): Float = 1f / gridSize.rows
+
+    private fun calculateRenderWidth(gridSize: GridSize): Float =
+        defaultSetting.defaultPartSize / calculateRelativePartWidth(gridSize)
+
+    private fun calculateRenderHeight(gridSize: GridSize): Float =
+        defaultSetting.defaultPartSize / calculateRelativePartHeight(gridSize)
 }
