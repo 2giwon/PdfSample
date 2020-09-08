@@ -6,8 +6,8 @@ import javax.inject.Inject
 
 class DefaultSetting @Inject constructor(context: Context) {
 
-    val defaultDocumentSpacing: Float by lazy {
-        DEFAULT_DOCUMENT_SPACING.pixelToDP(context)  // dp
+    val defaultDocumentSpacing: Int by lazy {
+        DEFAULT_DOCUMENT_SPACING.pixelToDP(context).toInt()  // dp
     }
 
     val defaultOffset: Float by lazy {
