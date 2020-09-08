@@ -16,8 +16,9 @@ import kr.eg.egiwon.pdfsample.pdfcore.PdfReadable
 import kr.eg.egiwon.pdfsample.pdfview.loader.PageLoadable
 import kr.eg.egiwon.pdfsample.pdfview.loader.PageLoader
 import kr.eg.egiwon.pdfsample.pdfview.model.PdfPage
-import kr.eg.egiwon.pdfsample.pdfview.render.RenderManager
-import kr.eg.egiwon.pdfsample.pdfview.render.Renderer
+import kr.eg.egiwon.pdfsample.pdfview.render.RenderTaskManager
+import kr.eg.egiwon.pdfsample.pdfview.render.RenderTaskManagerImpl
+import kr.eg.egiwon.pdfsample.pdfview.render.model.PagePart
 import kr.eg.egiwon.pdfsample.pdfview.setup.PdfSetupManager
 import kr.eg.egiwon.pdfsample.pdfview.setup.PdfSetupManagerImpl
 import kr.eg.egiwon.pdfsample.util.DefaultSetting
@@ -47,6 +48,9 @@ class PdfViewModel @ViewModelInject constructor(
     private val _pageSize = MutableLiveData<Event<Size<Int>>>()
     val pageSize: LiveData<Event<Size<Int>>> get() = _pageSize
 
+    private val _pagePart = MutableLiveData<Event<PagePart>>()
+    val pagePart: LiveData<Event<PagePart>> get() = _pagePart
+
     private val pdfPageList = mutableListOf<PdfPage>()
 
     private val currentXOffset = 0f
@@ -56,12 +60,12 @@ class PdfViewModel @ViewModelInject constructor(
         PdfSetupManagerImpl(pdfReadable, compositeDisposable, defaultSetting)
     }
 
-    private val renderer: RenderManager = Renderer(pdfReadable)
+    private val renderTaskManager: RenderTaskManager = RenderTaskManagerImpl(pdfReadable)
 
     private val pdfLoader: PageLoadable = PageLoader(
         defaultSetting,
         pageSetupManager,
-        renderer
+        renderTaskManager
     )
 
     fun loadPdfDocument(fd: ParcelFileDescriptor) {
@@ -92,6 +96,9 @@ class PdfViewModel @ViewModelInject constructor(
             .subscribeOn(Schedulers.computation())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
+                renderTaskManager.makePagePart(it)?.let { part ->
+                    _pagePart.value = Event(part)
+                }
 
             }.addTo(compositeDisposable)
     }

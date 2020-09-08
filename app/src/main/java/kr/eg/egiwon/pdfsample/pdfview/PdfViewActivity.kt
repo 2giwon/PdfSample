@@ -58,6 +58,12 @@ class PdfViewActivity : BaseActivity<ActivityPdfBinding, PdfViewModel>(
         viewModel.pageCount.observe(this, EventObserver { pageCount ->
             binding.pdfPageView.setPageCount(pageCount)
         })
+
+        viewModel.pagePart.observe(this, EventObserver { pagePart ->
+            binding.pdfPageView.post {
+
+            }
+        })
     }
 
     private fun loadPdfDocument(it: String) {
