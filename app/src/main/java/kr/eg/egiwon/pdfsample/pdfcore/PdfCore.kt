@@ -2,6 +2,7 @@ package kr.eg.egiwon.pdfsample.pdfcore
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Rect
 import android.os.ParcelFileDescriptor
 import android.util.Log
 import com.shockwave.pdfium.PdfDocument
@@ -51,6 +52,26 @@ class PdfCore @Inject constructor(context: Context) : PdfReadable {
 
     override fun openPage(page: Int) {
         pdfCore.openPage(pdfDocument, page)
+    }
+
+    override fun renderPageBitmap(
+        page: Int,
+        bitmap: Bitmap,
+        bounds: Rect,
+        isAnnotationRender: Boolean
+    ): Bitmap {
+        pdfCore.renderPageBitmap(
+            pdfDocument,
+            bitmap,
+            page,
+            bounds.left,
+            bounds.top,
+            bounds.width(),
+            bounds.height(),
+            isAnnotationRender
+        )
+
+        return bitmap
     }
 
     override fun openPdfDocument(fd: ParcelFileDescriptor): Boolean {
