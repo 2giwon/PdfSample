@@ -5,19 +5,23 @@ import io.reactivex.Flowable
 import kr.eg.egiwon.pdfsample.pdfview.model.GridSize
 import kr.eg.egiwon.pdfsample.pdfview.model.Holder
 import kr.eg.egiwon.pdfsample.pdfview.model.RenderingRange
-import kr.eg.egiwon.pdfsample.pdfview.render.RenderManager
+import kr.eg.egiwon.pdfsample.pdfview.render.RenderTaskManager
 import kr.eg.egiwon.pdfsample.pdfview.render.model.RenderTask
 import kr.eg.egiwon.pdfsample.pdfview.setup.PdfSetupManager
 import kr.eg.egiwon.pdfsample.util.DefaultSetting
 import kr.eg.egiwon.pdfsample.util.Size
 import org.reactivestreams.Subscriber
 import java.util.*
-import kotlin.math.*
+import kotlin.math.abs
+import kotlin.math.ceil
+import kotlin.math.floor
+import kotlin.math.max
+import kotlin.math.min
 
 class PageLoader(
     private val defaultSetting: DefaultSetting,
     private val pageSetup: PdfSetupManager,
-    private val renderer: RenderManager
+    private val renderer: RenderTaskManager
 ) : PageLoadable {
 
     private var xOffset = 0f
@@ -141,11 +145,11 @@ class PageLoader(
         lastYOffset: Float
     ): List<RenderingRange> {
 
-        val fixedFirstXOffset = -max(firstXOffset, 0f)
-        val fixedFirstYOffset = -max(firstYOffset, 0f)
+        val fixedFirstXOffset = -min(firstXOffset, 0f)
+        val fixedFirstYOffset = -min(firstYOffset, 0f)
 
-        val fixedLastXOffset = -max(lastXOffset, 0f)
-        val fixedLastYOffset = -max(lastYOffset, 0f)
+        val fixedLastXOffset = -min(lastXOffset, 0f)
+        val fixedLastYOffset = -min(lastYOffset, 0f)
 
         val firstPage = pageSetup.getPageAtOffset(fixedFirstYOffset)
         val lastPage = pageSetup.getPageAtOffset(fixedLastYOffset)
@@ -198,7 +202,7 @@ class PageLoader(
 
             val secondaryOffset = pageSetup.getSecondaryOffset(page)
 
-            range = makeRenderingRange(
+            range = range.makeRenderingRange(
                 pageFirstXOffset,
                 range.page,
                 rowHeight,
@@ -214,7 +218,7 @@ class PageLoader(
         return renderingRanges
     }
 
-    private fun makeRenderingRange(
+    private fun RenderingRange.makeRenderingRange(
         pageFirstXOffset: Float,
         page: Int,
         rowHeight: Float,
@@ -224,12 +228,14 @@ class PageLoader(
         pageLastXOffset: Float
     ): RenderingRange {
         return RenderingRange(
+            gridSize = this.gridSize,
+            page = this.page,
             leftTop = Holder(
                 row = floor(
                     abs(pageFirstXOffset - pageSetup.getPageOffset(page)) / rowHeight
                 ).toInt(),
                 col = floor(
-                    min(pageFirstXOffset - secondaryOffset, 0f) / colWidth
+                    max(pageFirstXOffset - secondaryOffset, 0f) / colWidth
                 ).toInt()
             ),
             rightBottom = Holder(
@@ -237,7 +243,7 @@ class PageLoader(
                     abs(pageLastYOffset - pageSetup.getPageOffset(page)) / rowHeight
                 ).toInt(),
                 col = floor(
-                    min(pageLastXOffset - secondaryOffset, 0f) / colWidth
+                    max(pageLastXOffset - secondaryOffset, 0f) / colWidth
                 ).toInt()
             )
         )

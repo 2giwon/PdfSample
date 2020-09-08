@@ -81,7 +81,7 @@ class PdfSetupManagerImpl(
     override fun getPageSize(pageIndex: Int): Size<Float> = pageSizes[pageIndex]
 
     override fun getSecondaryOffset(pageIndex: Int): Float =
-        zoom * (maxPageSize.width - getPageSize(pageIndex).width) / 2
+        zoom * (fitPageWidth.width - getPageSize(pageIndex).width) / 2
 
     private fun getPageSpacing(zoom: Float): Float = defaultSetting.defaultDocumentSpacing * zoom
 
@@ -128,8 +128,8 @@ class PdfSetupManagerImpl(
             val pageSize = pageSizes[i]
             val height = pageSize.height
 
-            offset += height + defaultSetting.defaultDocumentSpacing
             pageOffsets.add(offset)
+            offset += height + defaultSetting.defaultDocumentSpacing
         }
     }
 
