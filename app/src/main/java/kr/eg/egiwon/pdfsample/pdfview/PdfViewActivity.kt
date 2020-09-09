@@ -50,10 +50,10 @@ class PdfViewActivity : BaseActivity<ActivityPdfBinding, PdfViewModel>(
                 viewModel.requestPageSetup(size)
             }
         })
-
-        viewModel.pdfPage.observe(this, EventObserver {
-            binding.pdfPageView.addPdfPage(it)
-        })
+//
+//        viewModel.pdfPage.observe(this, EventObserver {
+//            binding.pdfPageView.addPdfPage(it)
+//        })
 
         viewModel.pageCount.observe(this, EventObserver { pageCount ->
             binding.pdfPageView.setPageCount(pageCount)
@@ -61,8 +61,13 @@ class PdfViewActivity : BaseActivity<ActivityPdfBinding, PdfViewModel>(
 
         viewModel.pagePart.observe(this, EventObserver { pagePart ->
             binding.pdfPageView.post {
-
+                binding.pdfPageView.onPagePartRendered(pagePart)
             }
+        })
+
+        viewModel.pageSetupCompletedManager.observe(this, EventObserver {
+            binding.pdfPageView.initCacheManager()
+            binding.pdfPageView.setPageSetupManager(it)
         })
     }
 

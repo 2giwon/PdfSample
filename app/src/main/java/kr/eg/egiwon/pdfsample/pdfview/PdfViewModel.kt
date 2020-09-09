@@ -33,32 +33,24 @@ class PdfViewModel @ViewModelInject constructor(
     private val _isOpenDocument = MutableLiveData<Event<Boolean>>()
     val isOpenDocument: LiveData<Event<Boolean>> get() = _isOpenDocument
 
-    private val _pdfPages = MutableLiveData<List<PdfPage>>()
-    val pdfPages: LiveData<List<PdfPage>> get() = _pdfPages
-
-    private val _pdfPage = MutableLiveData<Event<PdfPage>>()
-    val pdfPage: LiveData<Event<PdfPage>> get() = _pdfPage
-
     private val _isShowLoadingBar = MutableLiveData<Boolean>()
     val isShowLoadingBar: LiveData<Boolean> get() = _isShowLoadingBar
 
     private val _pageCount = MutableLiveData<Event<Int>>()
     val pageCount: LiveData<Event<Int>> get() = _pageCount
 
-    private val _pageSize = MutableLiveData<Event<Size<Int>>>()
-    val pageSize: LiveData<Event<Size<Int>>> get() = _pageSize
+    private val _pageSize = MutableLiveData<Event<Size<Float>>>()
+    val pageSize: LiveData<Event<Size<Float>>> get() = _pageSize
 
     private val _pagePart = MutableLiveData<Event<PagePart>>()
     val pagePart: LiveData<Event<PagePart>> get() = _pagePart
 
     private val pdfPageList = mutableListOf<PdfPage>()
 
-    private val currentXOffset = 0f
-    private val currentYOffset = 0f
+    private val pageSetupManager: PdfSetupManager by lazy(::createPdfSetupManager)
 
-    private val pageSetupManager: PdfSetupManager by lazy {
-        PdfSetupManagerImpl(pdfReadable, compositeDisposable, defaultSetting)
-    }
+    private val _pageSetupCompletedManager = MutableLiveData<Event<PdfSetupManager>>()
+    val pageSetupCompletedManager: LiveData<Event<PdfSetupManager>> get() = _pageSetupCompletedManager
 
     private val renderTaskManager: RenderTaskManager = RenderTaskManagerImpl(pdfReadable)
 
@@ -71,9 +63,9 @@ class PdfViewModel @ViewModelInject constructor(
     fun loadPdfDocument(fd: ParcelFileDescriptor) {
         Single.fromCallable {
             pdfReadable.openPdfDocument(fd)
-
         }.subscribeOn(Schedulers.single())
             .doOnSubscribe { _isShowLoadingBar.postValue(true) }
+            .doOnError { _isShowLoadingBar.postValue(false) }
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
                 _isOpenDocument.value = Event(it)
@@ -86,6 +78,7 @@ class PdfViewModel @ViewModelInject constructor(
                 _pageCount.postValue(Event(it))
             },
             setupComplete = {
+                _pageSetupCompletedManager.value = Event(pageSetupManager)
                 loadPages(viewSize)
             }
         )
@@ -95,12 +88,19 @@ class PdfViewModel @ViewModelInject constructor(
         pdfLoader.loadPages(viewSize)
             .subscribeOn(Schedulers.computation())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                renderTaskManager.makePagePart(it)?.let { part ->
-                    _pagePart.value = Event(part)
+            .subscribeBy(
+                onNext = {
+                    renderTaskManager.makePagePart(it)?.let { part ->
+                        _pagePart.value = Event(part)
+                    }
+                },
+                onComplete = {
+                    _isShowLoadingBar.postValue(false)
+                },
+                onError = {
+                    _isShowLoadingBar.postValue(false)
                 }
-
-            }.addTo(compositeDisposable)
+            ).addTo(compositeDisposable)
     }
 
     private fun loadPdfBitmaps() {
@@ -123,7 +123,7 @@ class PdfViewModel @ViewModelInject constructor(
                 .subscribeBy(
                     onNext = { pdfPage ->
                         pdfPageList.add(pdfPage)
-                        _pdfPage.value = Event(pdfPage)
+//                        _pdfPage.value = Event(pdfPage)
 //                    _pdfPages.value = pdfPageList
                     },
                     onError = {
@@ -137,7 +137,10 @@ class PdfViewModel @ViewModelInject constructor(
 
     }
 
+    private fun createPdfSetupManager(): PdfSetupManagerImpl =
+        PdfSetupManagerImpl(pdfReadable, compositeDisposable, defaultSetting)
+
     fun requestPageSize(pageNum: Int) {
-        _pageSize.value = Event(pdfReadable.getPageSize(pageNum))
+        _pageSize.value = Event(pageSetupManager.getPageSize(pageNum))
     }
 }
