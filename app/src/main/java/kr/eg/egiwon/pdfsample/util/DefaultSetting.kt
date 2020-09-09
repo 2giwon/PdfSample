@@ -21,5 +21,8 @@ class DefaultSetting @Inject constructor(context: Context) {
     companion object {
         private const val DEFAULT_DOCUMENT_SPACING = 10.0f
         private const val DEFAULT_OFFSET = 20f
+
+        const val CACHE_SIZE = 120
+        const val THUMBNAILS_CACHE_SIZE = 8
     }
 }
