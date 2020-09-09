@@ -72,6 +72,8 @@ class PageLoader(
                 )
                 if (partCount >= defaultSetting.defaultCacheSize) return@forEach
             }
+
+            subscriber.onComplete()
         }
     }
 
