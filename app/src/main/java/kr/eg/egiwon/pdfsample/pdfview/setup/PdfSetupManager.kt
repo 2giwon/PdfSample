@@ -19,4 +19,8 @@ interface PdfSetupManager {
     fun getPageSize(pageIndex: Int): Size<Float>
 
     fun getSecondaryOffset(pageIndex: Int): Float
+
+    fun getFitWidth(): Float
+
+    fun getFitHeight(): Float
 }

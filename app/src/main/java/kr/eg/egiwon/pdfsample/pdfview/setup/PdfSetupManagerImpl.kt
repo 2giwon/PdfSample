@@ -59,7 +59,7 @@ class PdfSetupManagerImpl(
     override fun getPageAtOffset(offset: Float): Int {
         var currentPage = 0
         for (i in 0 until getCurrentDocumentPageCount()) {
-            val tempOffset = pageOffsets[i] * zoom - getPageSpacing(zoom) / 2f
+            val tempOffset: Float = pageOffsets[i] * zoom - getPageSpacing(zoom) / 2f
             if (tempOffset >= offset) {
                 break
             }
@@ -82,6 +82,14 @@ class PdfSetupManagerImpl(
 
     override fun getSecondaryOffset(pageIndex: Int): Float =
         zoom * (fitPageWidth.width - getPageSize(pageIndex).width) / 2
+
+    override fun getFitWidth(): Float {
+        return fitPageWidth.width
+    }
+
+    override fun getFitHeight(): Float {
+        return fitPageWidth.height
+    }
 
     private fun getPageSpacing(zoom: Float): Float = defaultSetting.defaultDocumentSpacing * zoom
 
