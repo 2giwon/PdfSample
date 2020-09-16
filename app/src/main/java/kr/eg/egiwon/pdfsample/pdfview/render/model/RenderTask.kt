@@ -7,7 +7,7 @@ data class RenderTask(
     val height: Float,
     val bounds: RectF,
     val page: Int,
-    val thumbnail: Boolean = false,
+    val thumbnail: Boolean,
     val cacheOrder: Int,
     val isAnnotationRendering: Boolean
 )
