@@ -87,17 +87,20 @@ class PdfViewModel @ViewModelInject constructor(
     private fun loadPages(viewSize: Size<Int>) {
         pdfLoader.loadPages(viewSize)
             .subscribeOn(Schedulers.computation())
+            .concatMapEager {
+                Single.fromCallable { renderTaskManager.makePagePart(it) }.toFlowable()
+            }
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy(
-                onNext = {
-                    renderTaskManager.makePagePart(it)?.let { part ->
+            .subscribe(
+                { part ->
+                    if (part != null) {
                         _pagePart.value = Event(part)
                     }
                 },
-                onComplete = {
+                {
                     _isShowLoadingBar.postValue(false)
                 },
-                onError = {
+                {
                     _isShowLoadingBar.postValue(false)
                 }
             ).addTo(compositeDisposable)
