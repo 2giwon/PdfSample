@@ -48,7 +48,7 @@ class RenderTaskManagerImpl(private val pdfReadable: PdfReadable) : RenderTaskMa
                     task.isAnnotationRendering
                 )
 
-                return PagePart(task.page, it, task.bounds, task.cacheOrder)
+                return PagePart(task.page, it, task.bounds, task.cacheOrder, task.thumbnail)
             }.onFailure {
                 return null
             }
@@ -76,14 +76,16 @@ class RenderTaskManagerImpl(private val pdfReadable: PdfReadable) : RenderTaskMa
         height: Float,
         bounds: RectF,
         cacheOrder: Int,
-        annotRender: Boolean
+        annotRender: Boolean,
+        isThumbnail: Boolean
     ): RenderTask = RenderTask(
         page = page,
         width = width,
         height = height,
         bounds = bounds,
         cacheOrder = cacheOrder,
-        isAnnotationRendering = annotRender
+        isAnnotationRendering = annotRender,
+        thumbnail = isThumbnail
     )
 
 

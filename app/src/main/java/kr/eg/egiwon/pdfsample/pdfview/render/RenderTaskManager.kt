@@ -13,6 +13,7 @@ interface RenderTaskManager {
         height: Float,
         bounds: RectF,
         cacheOrder: Int,
-        annotRender: Boolean
+        annotRender: Boolean,
+        isThumbnail: Boolean
     ): RenderTask
 }
