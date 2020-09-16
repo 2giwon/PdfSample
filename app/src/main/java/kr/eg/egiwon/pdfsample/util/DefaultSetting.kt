@@ -24,5 +24,7 @@ class DefaultSetting @Inject constructor(context: Context) {
 
         const val CACHE_SIZE = 120
         const val THUMBNAILS_CACHE_SIZE = 8
+
+        const val THUMBNAIL_RATIO = 0.3f
     }
 }
