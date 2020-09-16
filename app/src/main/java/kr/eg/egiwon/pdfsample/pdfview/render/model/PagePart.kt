@@ -7,5 +7,6 @@ data class PagePart(
     val page: Int,
     val renderedPart: Bitmap,
     val bounds: RectF,
-    val cacheOrder: Int
+    val cacheOrder: Int,
+    val isThumbnail: Boolean
 )
