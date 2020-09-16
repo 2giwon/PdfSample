@@ -87,9 +87,9 @@ class PdfPageView @JvmOverloads constructor(
         with(pageSetupManager) {
             val size = getPageSize(part.page)
 
-            val translateX: Float = getPageOffset(part.page)
+            val translateY: Float = getPageOffset(part.page)
             val maxWidth: Float = getFitWidth()
-            val translateY: Float = (maxWidth - size.width).toZoomScale() / 2
+            val translateX: Float = (maxWidth - size.width).toZoomScale() / 2
 
             canvas.translate(translateX, translateY)
 

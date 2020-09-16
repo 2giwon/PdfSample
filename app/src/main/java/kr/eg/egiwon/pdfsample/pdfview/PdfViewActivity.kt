@@ -60,9 +60,7 @@ class PdfViewActivity : BaseActivity<ActivityPdfBinding, PdfViewModel>(
         })
 
         viewModel.pagePart.observe(this, EventObserver { pagePart ->
-            binding.pdfPageView.post {
-                binding.pdfPageView.onPagePartRendered(pagePart)
-            }
+            binding.pdfPageView.onPagePartRendered(pagePart)
         })
 
         viewModel.pageSetupCompletedManager.observe(this, EventObserver {
