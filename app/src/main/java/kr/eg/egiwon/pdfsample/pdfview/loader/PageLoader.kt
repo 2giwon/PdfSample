@@ -1,7 +1,9 @@
 package kr.eg.egiwon.pdfsample.pdfview.loader
 
 import android.graphics.RectF
+import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
+import io.reactivex.FlowableEmitter
 import kr.eg.egiwon.pdfsample.pdfview.model.GridSize
 import kr.eg.egiwon.pdfsample.pdfview.model.Holder
 import kr.eg.egiwon.pdfsample.pdfview.model.RenderingRange
@@ -10,7 +12,6 @@ import kr.eg.egiwon.pdfsample.pdfview.render.model.RenderTask
 import kr.eg.egiwon.pdfsample.pdfview.setup.PdfSetupManager
 import kr.eg.egiwon.pdfsample.util.DefaultSetting
 import kr.eg.egiwon.pdfsample.util.Size
-import org.reactivestreams.Subscriber
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.ceil
@@ -36,7 +37,7 @@ class PageLoader(
     private var cacheOrder = 0
 
     override fun loadPages(viewSize: Size<Int>): Flowable<RenderTask> {
-        return Flowable.unsafeCreate<RenderTask> { subscriber ->
+        return Flowable.create({ subscriber ->
             cacheOrder = 1
             var partCount = 0
             xOffset = -0f
@@ -58,8 +59,8 @@ class PageLoader(
             rangeList.forEach {
                 pageRelativePartWidth = calculateRelativePartWidth(it.gridSize)
                 pageRelativePartHeight = calculateRelativePartHeight(it.gridSize)
-                partRenderWidth = calculateRenderWidth(it.gridSize)
-                partRenderHeight = calculateRenderHeight(it.gridSize)
+                partRenderWidth = calculateRenderWidth()
+                partRenderHeight = calculateRenderHeight()
 
                 partCount += loadPage(
                     it.page,
@@ -74,7 +75,7 @@ class PageLoader(
             }
 
             subscriber.onComplete()
-        }
+        }, BackpressureStrategy.BUFFER)
     }
 
     private fun loadPage(
@@ -84,7 +85,7 @@ class PageLoader(
         firstCol: Int,
         lastCol: Int,
         partsLoadable: Int,
-        subscriber: Subscriber<in RenderTask>
+        subscriber: FlowableEmitter<in RenderTask>
     ): Int {
 
         var loaded = 0
@@ -108,7 +109,7 @@ class PageLoader(
         col: Int,
         pageRelativePartWidth: Float,
         pageRelativePartHeight: Float,
-        subscriber: Subscriber<in RenderTask>
+        subscriber: FlowableEmitter<in RenderTask>
     ): Boolean {
 
         val relX = pageRelativePartWidth * col
@@ -130,9 +131,13 @@ class PageLoader(
         val boundRect = RectF(relX, relY, relX + partWidth, relY + partHeight)
 
         if (renderWidth > 0 && renderHeight > 0) {
-            subscriber.onNext(renderer.createRenderTask(
-                page, renderWidth, renderHeight, boundRect, cacheOrder, false
-            ))
+            subscriber.onNext(
+                renderer.createRenderTask(
+                    page, renderWidth, renderHeight, boundRect, cacheOrder,
+                    annotRender = false,
+                    isThumbnail = false
+                )
+            )
             cacheOrder++
             return true
         }
@@ -163,11 +168,13 @@ class PageLoader(
             val tempRange = RenderingRange(page = page)
 
             val pageFirstXOffset: Float
+            val pageFirstYOffset: Float
             val pageLastXOffset: Float
             val pageLastYOffset: Float
 
             if (page == firstPage) {
                 pageFirstXOffset = fixedFirstXOffset
+                pageFirstYOffset = fixedFirstYOffset
                 if (pageCount == 1) {
                     pageLastXOffset = fixedLastXOffset
                     pageLastYOffset = fixedLastYOffset
@@ -178,9 +185,10 @@ class PageLoader(
                     pageLastYOffset = pageOffset + pageSize.height
                 }
             } else if (page == lastPage) {
-                pageSetup.getPageOffset(page)
+                val pageOffset = pageSetup.getPageOffset(page)
 
                 pageFirstXOffset = fixedFirstXOffset
+                pageFirstYOffset = pageOffset
 
                 pageLastXOffset = fixedLastXOffset
                 pageLastYOffset = fixedLastYOffset
@@ -189,6 +197,7 @@ class PageLoader(
                 val pageSize: Size<Float> = pageSetup.getScaledPageSize(page)
 
                 pageFirstXOffset = fixedFirstXOffset
+                pageFirstYOffset = pageOffset
 
                 pageLastXOffset = fixedLastXOffset
                 pageLastYOffset = pageOffset + pageSize.height
@@ -206,6 +215,7 @@ class PageLoader(
 
             range = range.makeRenderingRange(
                 pageFirstXOffset,
+                pageFirstYOffset,
                 range.page,
                 rowHeight,
                 secondaryOffset,
@@ -220,8 +230,16 @@ class PageLoader(
         return renderingRanges
     }
 
+//    private fun loadThumbnail(page: Int) {
+//        val pageSize = pageSetup.getPageSize(page)
+//        val thumbnailWidth = pageSize.width * THUMBNAIL_RATIO
+//        val thumbnailHeight = pageSize.height * THUMBNAIL_RATIO
+//        if ()
+//    }
+
     private fun RenderingRange.makeRenderingRange(
         pageFirstXOffset: Float,
+        pageFirstYOffset: Float,
         page: Int,
         rowHeight: Float,
         secondaryOffset: Float,
@@ -234,7 +252,7 @@ class PageLoader(
             page = this.page,
             leftTop = Holder(
                 row = floor(
-                    abs(pageFirstXOffset - pageSetup.getPageOffset(page)) / rowHeight
+                    abs(pageFirstYOffset - pageSetup.getPageOffset(page)) / rowHeight
                 ).toInt(),
                 col = floor(
                     max(pageFirstXOffset - secondaryOffset, 0f) / colWidth
@@ -267,9 +285,9 @@ class PageLoader(
 
     private fun calculateRelativePartHeight(gridSize: GridSize): Float = 1f / gridSize.rows
 
-    private fun calculateRenderWidth(gridSize: GridSize): Float =
-        defaultSetting.defaultPartSize / calculateRelativePartWidth(gridSize)
+    private fun calculateRenderWidth(): Float =
+        defaultSetting.defaultPartSize / pageRelativePartWidth
 
-    private fun calculateRenderHeight(gridSize: GridSize): Float =
-        defaultSetting.defaultPartSize / calculateRelativePartHeight(gridSize)
+    private fun calculateRenderHeight(): Float =
+        defaultSetting.defaultPartSize / pageRelativePartHeight
 }
