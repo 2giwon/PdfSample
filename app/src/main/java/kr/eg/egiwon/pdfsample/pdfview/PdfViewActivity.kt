@@ -67,6 +67,10 @@ class PdfViewActivity : BaseActivity<ActivityPdfBinding, PdfViewModel>(
             binding.pdfPageView.initCacheManager()
             binding.pdfPageView.setPageSetupManager(it)
         })
+
+        viewModel.time.observe(this, EventObserver {
+            showToast("pageSetup Complete Elapsed Time ${it}ms")
+        })
     }
 
     private fun loadPdfDocument(it: String) {

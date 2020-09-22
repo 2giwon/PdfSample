@@ -67,15 +67,18 @@ class MainActivity :
     }
 
     private fun ActivityMainBinding.initAdapter() {
-        rvFiles.adapter = object : BaseAdapter2(
-            BR.documentItem,
-            mapOf(BR.vm to viewModel),
-            mapOf(DocumentItem::class to R.layout.item_file)
-        ) {}
-        rvFiles.setHasFixedSize(true)
-        rvFiles.addItemDecoration(
-            DividerItemDecoration(this@MainActivity, DividerItemDecoration.VERTICAL)
-        )
+        with(rvFiles) {
+            adapter = object : BaseAdapter2(
+                BR.documentItem,
+                mapOf(BR.vm to viewModel),
+                mapOf(DocumentItem::class to R.layout.item_file)
+            ) {}
+            setHasFixedSize(true)
+            addItemDecoration(
+                DividerItemDecoration(this@MainActivity, DividerItemDecoration.VERTICAL)
+            )
+        }
+
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

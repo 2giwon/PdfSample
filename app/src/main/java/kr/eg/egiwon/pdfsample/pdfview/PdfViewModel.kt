@@ -1,6 +1,7 @@
 package kr.eg.egiwon.pdfsample.pdfview
 
 import android.os.ParcelFileDescriptor
+import android.os.SystemClock
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -45,6 +46,9 @@ class PdfViewModel @ViewModelInject constructor(
     private val _pagePart = MutableLiveData<Event<PagePart>>()
     val pagePart: LiveData<Event<PagePart>> get() = _pagePart
 
+    private val _time = MutableLiveData<Event<Long>>()
+    val time: LiveData<Event<Long>> get() = _time
+
     private val pdfPageList = mutableListOf<PdfPage>()
 
     private val pageSetupManager: PdfSetupManager by lazy(::createPdfSetupManager)
@@ -54,6 +58,9 @@ class PdfViewModel @ViewModelInject constructor(
 
     private val renderTaskManager: RenderTaskManager = RenderTaskManagerImpl(pdfReadable)
 
+    private var startTime = 0L
+    private var endTime = 0L
+
     private val pdfLoader: PageLoadable = PageLoader(
         defaultSetting,
         pageSetupManager,
@@ -61,6 +68,7 @@ class PdfViewModel @ViewModelInject constructor(
     )
 
     fun loadPdfDocument(fd: ParcelFileDescriptor) {
+        startTime = SystemClock.elapsedRealtime()
         Single.fromCallable {
             pdfReadable.openPdfDocument(fd)
         }.subscribeOn(Schedulers.single())
@@ -78,6 +86,8 @@ class PdfViewModel @ViewModelInject constructor(
                 _pageCount.postValue(Event(it))
             },
             setupComplete = {
+                endTime = SystemClock.elapsedRealtime()
+                _time.value = Event(endTime - startTime)
                 _pageSetupCompletedManager.value = Event(pageSetupManager)
                 loadPages(viewSize)
             }
