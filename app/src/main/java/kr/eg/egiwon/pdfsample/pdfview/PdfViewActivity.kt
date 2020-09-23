@@ -37,7 +37,6 @@ class PdfViewActivity : BaseActivity<ActivityPdfBinding, PdfViewModel>(
                 }.addTo(compositeDisposable)
         }
 
-        addObserve()
     }
 
     override fun addObserve() {

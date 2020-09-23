@@ -39,8 +39,6 @@ class MainActivity :
         }
 
         viewModel.loadRootUri()
-        addObserve()
-
         processBackPressedExit()
     }
 
