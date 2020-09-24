@@ -14,8 +14,8 @@ open class BindingViewHolder(
         if (item == null) return
 
         binding.run {
-            viewModels.forEach {
-                if (it.key == null) return@forEach
+            for (it in viewModels) {
+                if (it.key == null) continue
                 setVariable(requireNotNull(it.key), it.value)
             }
 

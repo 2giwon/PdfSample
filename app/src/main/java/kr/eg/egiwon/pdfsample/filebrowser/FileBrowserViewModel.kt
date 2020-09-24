@@ -14,14 +14,12 @@ import kr.eg.egiwon.pdfsample.Event
 import kr.eg.egiwon.pdfsample.base.BaseViewModel
 import kr.eg.egiwon.pdfsample.data.FileBrowserRepository
 import kr.eg.egiwon.pdfsample.filebrowser.model.DocumentItem
-import kr.eg.egiwon.pdfsample.pdfcore.PdfReadable
 import kr.eg.egiwon.pdfsample.util.DocumentProvider
 import java.util.*
 
 class FileBrowserViewModel @ViewModelInject constructor(
     private val repository: FileBrowserRepository,
-    private val documentProvider: DocumentProvider,
-    private val pdfReadable: PdfReadable
+    private val documentProvider: DocumentProvider
 ) : BaseViewModel() {
 
     private val _directoryUri = MutableLiveData<Event<Uri>>()

@@ -48,7 +48,7 @@ class PdfSetupManagerImpl(
 
                 originalPageSizes.add(pageSize)
             }
-        }.subscribeOn(Schedulers.single())
+        }.subscribeOn(Schedulers.computation())
             .map { calcPageFitSize(viewSize) }
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
@@ -103,8 +103,10 @@ class PdfSetupManagerImpl(
         fitPageWidth = pageSizeOptimizeManager.getFitPageWidth()
         fitPageHeight = pageSizeOptimizeManager.getFitPageHeight()
 
-        originalPageSizes.forEach {
-            pageSizes.add(pageSizeOptimizeManager.calculateCurrentViewSizeFitDocument(it))
+        for (i in originalPageSizes.indices) {
+            pageSizes.add(
+                pageSizeOptimizeManager.calculateCurrentViewSizeFitDocument(originalPageSizes[i])
+            )
         }
 
         documentLength = getDocumentLength()

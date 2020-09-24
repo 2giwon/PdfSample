@@ -58,8 +58,8 @@ class PdfViewActivity : BaseActivity<ActivityPdfBinding, PdfViewModel>(
             binding.pdfPageView.setPageCount(pageCount)
         })
 
-        viewModel.pagePart.observe(this, EventObserver { pagePart ->
-            binding.pdfPageView.onPagePartRendered(pagePart)
+        viewModel.renderTasks.observe(this, EventObserver { renderTasks ->
+            binding.pdfPageView.setRenderTask(renderTasks)
         })
 
         viewModel.pageSetupCompletedManager.observe(this, EventObserver {
@@ -70,6 +70,11 @@ class PdfViewActivity : BaseActivity<ActivityPdfBinding, PdfViewModel>(
         viewModel.time.observe(this, EventObserver {
             showToast("pageSetup Complete Elapsed Time ${it}ms")
         })
+    }
+
+    override fun onStop() {
+        super.onStop()
+        viewModel.closeDocument()
     }
 
     private fun loadPdfDocument(it: String) {

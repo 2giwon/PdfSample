@@ -4,19 +4,19 @@ import android.content.Context
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ActivityRetainedComponent
+import dagger.hilt.android.components.ApplicationComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kr.eg.egiwon.pdfsample.pdfcore.PdfCore
 import kr.eg.egiwon.pdfsample.pdfcore.PdfReadable
+import javax.inject.Singleton
 
 @Module
-@InstallIn(ActivityRetainedComponent::class)
-class PdfCoreModule {
+@InstallIn(ApplicationComponent::class)
+object PdfCoreModule {
 
-    @ActivityRetainedScoped
+    @Singleton
     @Provides
     fun providePdfCore(
         @ApplicationContext applicationContext: Context
-    ): PdfReadable = PdfCore(applicationContext)
+    ): PdfReadable = PdfCore.getInstance(applicationContext)
 }

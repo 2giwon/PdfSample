@@ -2,6 +2,7 @@ package kr.eg.egiwon.pdfsample.pdfview
 
 import android.os.ParcelFileDescriptor
 import android.os.SystemClock
+import android.util.Log
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -17,9 +18,7 @@ import kr.eg.egiwon.pdfsample.pdfcore.PdfReadable
 import kr.eg.egiwon.pdfsample.pdfview.loader.PageLoadable
 import kr.eg.egiwon.pdfsample.pdfview.loader.PageLoader
 import kr.eg.egiwon.pdfsample.pdfview.model.PdfPage
-import kr.eg.egiwon.pdfsample.pdfview.render.RenderTaskManager
-import kr.eg.egiwon.pdfsample.pdfview.render.RenderTaskManagerImpl
-import kr.eg.egiwon.pdfsample.pdfview.render.model.PagePart
+import kr.eg.egiwon.pdfsample.pdfview.render.model.RenderTask
 import kr.eg.egiwon.pdfsample.pdfview.setup.PdfSetupManager
 import kr.eg.egiwon.pdfsample.pdfview.setup.PdfSetupManagerImpl
 import kr.eg.egiwon.pdfsample.util.DefaultSetting
@@ -43,8 +42,8 @@ class PdfViewModel @ViewModelInject constructor(
     private val _pageSize = MutableLiveData<Event<Size<Float>>>()
     val pageSize: LiveData<Event<Size<Float>>> get() = _pageSize
 
-    private val _pagePart = MutableLiveData<Event<PagePart>>()
-    val pagePart: LiveData<Event<PagePart>> get() = _pagePart
+    private val _renderTasks = MutableLiveData<Event<List<RenderTask>>>()
+    val renderTasks: LiveData<Event<List<RenderTask>>> get() = _renderTasks
 
     private val _time = MutableLiveData<Event<Long>>()
     val time: LiveData<Event<Long>> get() = _time
@@ -56,16 +55,10 @@ class PdfViewModel @ViewModelInject constructor(
     private val _pageSetupCompletedManager = MutableLiveData<Event<PdfSetupManager>>()
     val pageSetupCompletedManager: LiveData<Event<PdfSetupManager>> get() = _pageSetupCompletedManager
 
-    private val renderTaskManager: RenderTaskManager = RenderTaskManagerImpl(pdfReadable)
-
     private var startTime = 0L
     private var endTime = 0L
 
-    private val pdfLoader: PageLoadable = PageLoader(
-        defaultSetting,
-        pageSetupManager,
-        renderTaskManager
-    )
+    private val pdfLoader: PageLoadable = PageLoader(defaultSetting, pageSetupManager)
 
     fun loadPdfDocument(fd: ParcelFileDescriptor) {
         startTime = SystemClock.elapsedRealtime()
@@ -95,23 +88,19 @@ class PdfViewModel @ViewModelInject constructor(
     }
 
     private fun loadPages(viewSize: Size<Int>) {
+        startTime = SystemClock.elapsedRealtime()
         pdfLoader.loadPages(viewSize)
             .subscribeOn(Schedulers.computation())
-            .concatMapEager {
-                Single.fromCallable { renderTaskManager.makePagePart(it) }.toFlowable()
-            }
+            .doAfterTerminate { _isShowLoadingBar.postValue(false) }
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
-                { part ->
-                    if (part != null) {
-                        _pagePart.value = Event(part)
-                    }
+                { parts ->
+                    _renderTasks.value = Event(parts)
+                    endTime = SystemClock.elapsedRealtime()
+                    Log.e("PartElapsedTime", "time : ${endTime - startTime} ms")
                 },
                 {
-                    _isShowLoadingBar.postValue(false)
-                },
-                {
-                    _isShowLoadingBar.postValue(false)
+                    errorThrowableMutableLiveData.value = it
                 }
             ).addTo(compositeDisposable)
     }
@@ -155,5 +144,9 @@ class PdfViewModel @ViewModelInject constructor(
 
     fun requestPageSize(pageNum: Int) {
         _pageSize.value = Event(pageSetupManager.getPageSize(pageNum))
+    }
+
+    fun closeDocument() {
+        pdfReadable.closeDocument()
     }
 }

@@ -11,7 +11,11 @@ import android.widget.FrameLayout
 import dagger.hilt.android.AndroidEntryPoint
 import kr.eg.egiwon.pdfsample.pdfview.cache.CacheManager
 import kr.eg.egiwon.pdfsample.pdfview.cache.CacheManagerImpl
+import kr.eg.egiwon.pdfsample.pdfview.render.RenderHandler
+import kr.eg.egiwon.pdfsample.pdfview.render.RenderHandler.Companion.sendTask
+import kr.eg.egiwon.pdfsample.pdfview.render.RenderHandlerActionListener
 import kr.eg.egiwon.pdfsample.pdfview.render.model.PagePart
+import kr.eg.egiwon.pdfsample.pdfview.render.model.RenderTask
 import kr.eg.egiwon.pdfsample.pdfview.setup.PdfSetupManager
 import javax.inject.Inject
 
@@ -20,7 +24,7 @@ class PdfPageView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
-) : FrameLayout(context, attrs, defStyleAttr) {
+) : FrameLayout(context, attrs, defStyleAttr), RenderHandlerActionListener {
 
     private val paint = Paint()
 
@@ -37,10 +41,16 @@ class PdfPageView @JvmOverloads constructor(
     @Inject
     lateinit var viewModel: PdfViewModel
 
+    @Inject
+    lateinit var handler: RenderHandler
+
     private lateinit var pageSetupManager: PdfSetupManager
+
+    private val renderTasks = mutableListOf<RenderTask>()
 
     init {
         setWillNotDraw(false)
+        handler.setActionListener(this)
     }
 
     fun setPageCount(pageCount: Int) {
@@ -51,7 +61,16 @@ class PdfPageView @JvmOverloads constructor(
         cacheManager.init()
     }
 
-    fun onPagePartRendered(pagePart: PagePart) {
+    fun setRenderTask(tasks: List<RenderTask>) {
+        renderTasks.clear()
+        renderTasks.addAll(tasks)
+
+        for (renderTask in renderTasks) {
+            handler.sendTask(renderTask)
+        }
+    }
+
+    private fun onPagePartRendered(pagePart: PagePart) {
         cacheManager.cachePart(pagePart)
         invalidate()
     }
@@ -68,8 +87,9 @@ class PdfPageView @JvmOverloads constructor(
         val currentOffsetY = currentYOffset
         canvas.translate(currentOffsetX, currentOffsetY)
 
-        cacheManager.getPageParts().forEach {
-            drawPart(canvas, it)
+        val pageParts = cacheManager.getPageParts()
+        for (i in pageParts.indices) {
+            drawPart(canvas, pageParts[i])
         }
 
         canvas.translate(-currentOffsetX, -currentOffsetY)
@@ -118,4 +138,8 @@ class PdfPageView @JvmOverloads constructor(
     }
 
     private fun Float.toZoomScale(): Float = this * pageSetupManager.getPageZoom()
+
+    override fun onBitmapRendered(part: PagePart) {
+        post { onPagePartRendered(part) }
+    }
 }

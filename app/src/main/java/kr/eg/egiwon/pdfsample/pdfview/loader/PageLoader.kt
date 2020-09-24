@@ -1,13 +1,12 @@
 package kr.eg.egiwon.pdfsample.pdfview.loader
 
 import android.graphics.RectF
-import io.reactivex.BackpressureStrategy
-import io.reactivex.Flowable
-import io.reactivex.FlowableEmitter
+import android.os.SystemClock
+import android.util.Log
+import io.reactivex.Single
 import kr.eg.egiwon.pdfsample.pdfview.model.GridSize
 import kr.eg.egiwon.pdfsample.pdfview.model.Holder
 import kr.eg.egiwon.pdfsample.pdfview.model.RenderingRange
-import kr.eg.egiwon.pdfsample.pdfview.render.RenderTaskManager
 import kr.eg.egiwon.pdfsample.pdfview.render.model.RenderTask
 import kr.eg.egiwon.pdfsample.pdfview.setup.PdfSetupManager
 import kr.eg.egiwon.pdfsample.util.DefaultSetting
@@ -21,8 +20,7 @@ import kotlin.math.min
 
 class PageLoader(
     private val defaultSetting: DefaultSetting,
-    private val pageSetup: PdfSetupManager,
-    private val renderer: RenderTaskManager
+    private val pageSetup: PdfSetupManager
 ) : PageLoadable {
 
     private var xOffset = 0f
@@ -36,8 +34,13 @@ class PageLoader(
 
     private var cacheOrder = 0
 
-    override fun loadPages(viewSize: Size<Int>): Flowable<RenderTask> {
-        return Flowable.create({ subscriber ->
+    private var startTime = 0L
+    private var endTime = 0L
+
+    private val tasks = mutableListOf<RenderTask>()
+
+    override fun loadPages(viewSize: Size<Int>): Single<List<RenderTask>> {
+        return Single.create { subscriber ->
             cacheOrder = 1
             var partCount = 0
             xOffset = -0f
@@ -56,26 +59,25 @@ class PageLoader(
                 lastYOffset
             )
 
-            rangeList.forEach {
-                pageRelativePartWidth = calculateRelativePartWidth(it.gridSize)
-                pageRelativePartHeight = calculateRelativePartHeight(it.gridSize)
+            for (i in rangeList.indices) {
+                pageRelativePartWidth = calculateRelativePartWidth(rangeList[i].gridSize)
+                pageRelativePartHeight = calculateRelativePartHeight(rangeList[i].gridSize)
                 partRenderWidth = calculateRenderWidth()
                 partRenderHeight = calculateRenderHeight()
 
                 partCount += loadPage(
-                    it.page,
-                    it.leftTop.row,
-                    it.rightBottom.row,
-                    it.leftTop.col,
-                    it.rightBottom.col,
-                    defaultSetting.defaultCacheSize - partCount,
-                    subscriber
+                    rangeList[i].page,
+                    rangeList[i].leftTop.row,
+                    rangeList[i].rightBottom.row,
+                    rangeList[i].leftTop.col,
+                    rangeList[i].rightBottom.col,
+                    defaultSetting.defaultCacheSize - partCount
                 )
-                if (partCount >= defaultSetting.defaultCacheSize) return@forEach
+                if (partCount >= defaultSetting.defaultCacheSize) continue
             }
 
-            subscriber.onComplete()
-        }, BackpressureStrategy.BUFFER)
+            subscriber.onSuccess(tasks)
+        }
     }
 
     private fun loadPage(
@@ -84,14 +86,13 @@ class PageLoader(
         lastRow: Int,
         firstCol: Int,
         lastCol: Int,
-        partsLoadable: Int,
-        subscriber: FlowableEmitter<in RenderTask>
+        partsLoadable: Int
     ): Int {
 
         var loaded = 0
         for (row in firstRow..lastRow) {
             for (col in firstCol..lastCol) {
-                if (loadPart(page, row, col, pageRelativePartWidth, pageRelativePartHeight, subscriber)) {
+                if (loadPart(page, row, col, pageRelativePartWidth, pageRelativePartHeight)) {
                     loaded++
                 }
                 if (loaded >= partsLoadable) {
@@ -108,10 +109,10 @@ class PageLoader(
         row: Int,
         col: Int,
         pageRelativePartWidth: Float,
-        pageRelativePartHeight: Float,
-        subscriber: FlowableEmitter<in RenderTask>
+        pageRelativePartHeight: Float
     ): Boolean {
 
+        startTime = SystemClock.elapsedRealtime()
         val relX = pageRelativePartWidth * col
         val relY = pageRelativePartHeight * row
         var partWidth = pageRelativePartWidth
@@ -119,6 +120,7 @@ class PageLoader(
 
         var renderWidth = partRenderWidth
         var renderHeight = partRenderHeight
+
         if (relX + partWidth > 1) {
             partWidth = 1 - relX
         }
@@ -126,18 +128,21 @@ class PageLoader(
         if (relY + partHeight > 1) {
             partHeight = 1 - relY
         }
+
         renderWidth *= partWidth
         renderHeight *= partHeight
         val boundRect = RectF(relX, relY, relX + partWidth, relY + partHeight)
 
         if (renderWidth > 0 && renderHeight > 0) {
-            subscriber.onNext(
-                renderer.createRenderTask(
-                    page, renderWidth, renderHeight, boundRect, cacheOrder,
-                    annotRender = false,
-                    isThumbnail = false
-                )
+
+            val renderTask = createRenderTask(
+                page, renderWidth, renderHeight, boundRect, cacheOrder,
+                annotRender = false,
+                isThumbnail = false
             )
+            tasks.add(renderTask)
+            endTime = SystemClock.elapsedRealtime()
+            Log.e("PartElapsedTime", "loadPart time : ${endTime - startTime} ms")
             cacheOrder++
             return true
         }
@@ -290,4 +295,22 @@ class PageLoader(
 
     private fun calculateRenderHeight(): Float =
         defaultSetting.defaultPartSize / pageRelativePartHeight
+
+    private fun createRenderTask(
+        page: Int,
+        width: Float,
+        height: Float,
+        bounds: RectF,
+        cacheOrder: Int,
+        annotRender: Boolean,
+        isThumbnail: Boolean
+    ): RenderTask = RenderTask(
+        page = page,
+        width = width,
+        height = height,
+        bounds = bounds,
+        cacheOrder = cacheOrder,
+        isAnnotationRendering = annotRender,
+        thumbnail = isThumbnail
+    )
 }

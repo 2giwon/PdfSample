@@ -4,13 +4,22 @@ import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.graphics.Rect
 import android.graphics.RectF
+import android.os.Handler
+import android.os.Message
 import android.util.SparseBooleanArray
 import kr.eg.egiwon.pdfsample.pdfcore.PdfReadable
 import kr.eg.egiwon.pdfsample.pdfview.render.model.PagePart
 import kr.eg.egiwon.pdfsample.pdfview.render.model.RenderTask
+import javax.inject.Inject
 import kotlin.math.round
 
-class RenderTaskManagerImpl(private val pdfReadable: PdfReadable) : RenderTaskManager {
+interface RenderHandlerActionListener {
+    fun onBitmapRendered(part: PagePart)
+}
+
+class RenderHandler @Inject constructor(
+    private val pdfReadable: PdfReadable
+) : Handler() {
 
     private val lock = Any()
 
@@ -20,7 +29,22 @@ class RenderTaskManagerImpl(private val pdfReadable: PdfReadable) : RenderTaskMa
     private val renderBounds = RectF()
     private val roundedBounds = Rect()
 
-    override fun makePagePart(task: RenderTask): PagePart? {
+    private var listener: RenderHandlerActionListener? = null
+
+    override fun handleMessage(msg: Message) {
+        val task = msg.obj as RenderTask
+        try {
+            val part = makePagePart(task)
+
+            if (part != null) {
+                listener?.onBitmapRendered(part)
+            }
+        } catch (ex: Exception) {
+
+        }
+    }
+
+    private fun makePagePart(task: RenderTask): PagePart? {
         synchronized(lock) {
             runCatching { pdfReadable.openPage(task.page) }
                 .onSuccess {
@@ -70,5 +94,16 @@ class RenderTaskManagerImpl(private val pdfReadable: PdfReadable) : RenderTaskMa
     private fun hasErrorPage(page: Int): Boolean =
         !openedPages.get(page, false)
 
+    fun setActionListener(listener: RenderHandlerActionListener) {
+        this.listener = listener
+    }
 
+    companion object {
+        private const val MSG_RENDER_TASK = 1
+
+        fun RenderHandler.sendTask(task: RenderTask) {
+            val msg: Message = obtainMessage(MSG_RENDER_TASK, task)
+            sendMessage(msg)
+        }
+    }
 }

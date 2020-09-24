@@ -108,5 +108,13 @@ class PdfCore @Inject constructor(context: Context) : PdfReadable {
 
     companion object {
         private const val TAG = "PdfCore"
+
+        private var instance: PdfCore? = null
+
+        fun getInstance(context: Context): PdfCore =
+            instance ?: PdfCore(context).apply {
+                instance = this
+            }
+
     }
 }
