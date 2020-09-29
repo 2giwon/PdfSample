@@ -10,7 +10,7 @@ import com.shockwave.pdfium.PdfiumCore
 import kr.eg.egiwon.pdfsample.util.Size
 import javax.inject.Inject
 
-class PdfCore @Inject constructor(context: Context) : PdfReadable {
+class PdfCore @Inject constructor(context: Context) : PdfCoreAction {
 
     private val pdfCore: PdfiumCore = PdfiumCore(context)
     private lateinit var pdfDocument: PdfDocument

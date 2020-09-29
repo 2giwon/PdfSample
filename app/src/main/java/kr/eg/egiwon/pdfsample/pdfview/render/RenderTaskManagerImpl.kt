@@ -5,12 +5,12 @@ import android.graphics.Matrix
 import android.graphics.Rect
 import android.graphics.RectF
 import android.util.SparseBooleanArray
-import kr.eg.egiwon.pdfsample.pdfcore.PdfReadable
+import kr.eg.egiwon.pdfsample.pdfcore.PdfCoreAction
 import kr.eg.egiwon.pdfsample.pdfview.render.model.PagePart
 import kr.eg.egiwon.pdfsample.pdfview.render.model.RenderTask
 import kotlin.math.round
 
-class RenderTaskManagerImpl(private val pdfReadable: PdfReadable) : RenderTaskManager {
+class RenderTaskManagerImpl(private val pdfCoreAction: PdfCoreAction) : RenderTaskManager {
 
     private val lock = Any()
 
@@ -22,7 +22,7 @@ class RenderTaskManagerImpl(private val pdfReadable: PdfReadable) : RenderTaskMa
 
     override fun makePagePart(task: RenderTask): PagePart? {
         synchronized(lock) {
-            runCatching { pdfReadable.openPage(task.page) }
+            runCatching { pdfCoreAction.openPage(task.page) }
                 .onSuccess {
                     openedPages.put(task.page, true)
                 }
@@ -41,7 +41,7 @@ class RenderTaskManagerImpl(private val pdfReadable: PdfReadable) : RenderTaskMa
                 Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
             }.onSuccess {
                 renderMatrix.calculateBounds(w, h, task.bounds)
-                pdfReadable.renderPageBitmap(
+                pdfCoreAction.renderPageBitmap(
                     task.page,
                     it,
                     roundedBounds,

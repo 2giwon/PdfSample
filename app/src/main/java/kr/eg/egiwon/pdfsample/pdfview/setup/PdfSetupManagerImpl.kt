@@ -6,13 +6,13 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
-import kr.eg.egiwon.pdfsample.pdfcore.PdfReadable
+import kr.eg.egiwon.pdfsample.pdfcore.PdfCoreAction
 import kr.eg.egiwon.pdfsample.pdfview.pagesize.PageSizeOptimizeManagerImpl
 import kr.eg.egiwon.pdfsample.util.DefaultSetting
 import kr.eg.egiwon.pdfsample.util.Size
 
 class PdfSetupManagerImpl(
-    private val pdfReadable: PdfReadable,
+    private val pdfCoreAction: PdfCoreAction,
     private val compositeDisposable: CompositeDisposable,
     private val defaultSetting: DefaultSetting
 ) : PdfSetupManager {
@@ -30,7 +30,7 @@ class PdfSetupManagerImpl(
 
     private var documentLength: Float = 0f
 
-    private val pageCount: Int by lazy(pdfReadable::getPageCount)
+    private val pageCount: Int by lazy(pdfCoreAction::getPageCount)
 
     private var zoom = 1f
 
@@ -38,7 +38,7 @@ class PdfSetupManagerImpl(
         Single.fromCallable {
             onPageCount(pageCount)
             for (i in 0 until pageCount) {
-                val pageSize: Size<Int> = pdfReadable.getPageSize(i)
+                val pageSize: Size<Int> = pdfCoreAction.getPageSize(i)
                 if (pageSize.width > maxPageSize.width) {
                     maxPageSize = pageSize
                 }
@@ -114,7 +114,7 @@ class PdfSetupManagerImpl(
     }
 
     private fun getDocumentLength(): Float {
-        val pageCount = pdfReadable.getPageCount()
+        val pageCount = pdfCoreAction.getPageCount()
         var documentLength = 0f
 
         for (i in 0 until pageCount) {
@@ -132,7 +132,7 @@ class PdfSetupManagerImpl(
     private fun preparePagesOffset() {
         pageOffsets.clear()
         var offset = 0f
-        val pageCount = pdfReadable.getPageCount()
+        val pageCount = pdfCoreAction.getPageCount()
 
         for (i in 0 until pageCount) {
             val pageSize = pageSizes[i]

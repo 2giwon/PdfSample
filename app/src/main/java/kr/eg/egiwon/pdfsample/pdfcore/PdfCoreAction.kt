@@ -5,7 +5,7 @@ import android.graphics.Rect
 import android.os.ParcelFileDescriptor
 import kr.eg.egiwon.pdfsample.util.Size
 
-interface PdfReadable {
+interface PdfCoreAction {
 
     fun openPdfDocument(fd: ParcelFileDescriptor): Boolean
 
