@@ -58,8 +58,8 @@ class PdfViewActivity : BaseActivity<ActivityPdfBinding, PdfViewModel>(
             binding.pdfPageView.setPageCount(pageCount)
         })
 
-        viewModel.renderTasks.observe(this, EventObserver { renderTasks ->
-            binding.pdfPageView.setRenderTask(renderTasks)
+        viewModel.pagePart.observe(this, EventObserver { pagePart ->
+            binding.pdfPageView.setPagePart(pagePart)
         })
 
         viewModel.pageSetupCompletedManager.observe(this, EventObserver {
@@ -75,6 +75,7 @@ class PdfViewActivity : BaseActivity<ActivityPdfBinding, PdfViewModel>(
     override fun onStop() {
         super.onStop()
         viewModel.closeDocument()
+        binding.pdfPageView.clearData()
     }
 
     private fun loadPdfDocument(it: String) {

@@ -11,11 +11,7 @@ import android.widget.FrameLayout
 import dagger.hilt.android.AndroidEntryPoint
 import kr.eg.egiwon.pdfsample.pdfview.cache.CacheManager
 import kr.eg.egiwon.pdfsample.pdfview.cache.CacheManagerImpl
-import kr.eg.egiwon.pdfsample.pdfview.render.RenderHandler
-import kr.eg.egiwon.pdfsample.pdfview.render.RenderHandler.Companion.sendTask
-import kr.eg.egiwon.pdfsample.pdfview.render.RenderHandlerActionListener
 import kr.eg.egiwon.pdfsample.pdfview.render.model.PagePart
-import kr.eg.egiwon.pdfsample.pdfview.render.model.RenderTask
 import kr.eg.egiwon.pdfsample.pdfview.setup.PdfSetupManager
 import javax.inject.Inject
 
@@ -24,7 +20,7 @@ class PdfPageView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
-) : FrameLayout(context, attrs, defStyleAttr), RenderHandlerActionListener {
+) : FrameLayout(context, attrs, defStyleAttr) {
 
     private val paint = Paint()
 
@@ -41,16 +37,16 @@ class PdfPageView @JvmOverloads constructor(
     @Inject
     lateinit var viewModel: PdfViewModel
 
-    @Inject
-    lateinit var handler: RenderHandler
+//    @Inject
+//    lateinit var handler: RenderHandler
 
     private lateinit var pageSetupManager: PdfSetupManager
 
-    private val renderTasks = mutableListOf<RenderTask>()
+    private val pageParts = mutableListOf<PagePart>()
 
     init {
         setWillNotDraw(false)
-        handler.setActionListener(this)
+//        handler.setActionListener(this)
     }
 
     fun setPageCount(pageCount: Int) {
@@ -61,13 +57,17 @@ class PdfPageView @JvmOverloads constructor(
         cacheManager.init()
     }
 
-    fun setRenderTask(tasks: List<RenderTask>) {
-        renderTasks.clear()
-        renderTasks.addAll(tasks)
+    fun setPageParts(parts: List<PagePart>) {
+        pageParts.clear()
+        pageParts.addAll(parts)
 
-        for (renderTask in renderTasks) {
-            handler.sendTask(renderTask)
+        for (part in pageParts) {
+            post { onPagePartRendered(part) }
         }
+    }
+
+    fun setPagePart(part: PagePart) {
+        post { onPagePartRendered(part) }
     }
 
     private fun onPagePartRendered(pagePart: PagePart) {
@@ -139,7 +139,7 @@ class PdfPageView @JvmOverloads constructor(
 
     private fun Float.toZoomScale(): Float = this * pageSetupManager.getPageZoom()
 
-    override fun onBitmapRendered(part: PagePart) {
-        post { onPagePartRendered(part) }
+    fun clearData() {
+        cacheManager.clearCache()
     }
 }
