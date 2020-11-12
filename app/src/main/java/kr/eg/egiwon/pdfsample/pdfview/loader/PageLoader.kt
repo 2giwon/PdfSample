@@ -1,12 +1,19 @@
 package kr.eg.egiwon.pdfsample.pdfview.loader
 
+import android.graphics.Bitmap
+import android.graphics.Matrix
+import android.graphics.Rect
 import android.graphics.RectF
 import android.os.SystemClock
 import android.util.Log
-import io.reactivex.Single
+import android.util.SparseBooleanArray
+import io.reactivex.Observable
+import io.reactivex.ObservableEmitter
+import kr.eg.egiwon.pdfsample.pdfcore.PdfCoreAction
 import kr.eg.egiwon.pdfsample.pdfview.model.GridSize
 import kr.eg.egiwon.pdfsample.pdfview.model.Holder
 import kr.eg.egiwon.pdfsample.pdfview.model.RenderingRange
+import kr.eg.egiwon.pdfsample.pdfview.render.model.PagePart
 import kr.eg.egiwon.pdfsample.pdfview.render.model.RenderTask
 import kr.eg.egiwon.pdfsample.pdfview.setup.PdfSetupManager
 import kr.eg.egiwon.pdfsample.util.DefaultSetting
@@ -17,10 +24,12 @@ import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.round
 
 class PageLoader(
     private val defaultSetting: DefaultSetting,
-    private val pageSetup: PdfSetupManager
+    private val pageSetup: PdfSetupManager,
+    private val pdfCoreAction: PdfCoreAction
 ) : PageLoadable {
 
     private var xOffset = 0f
@@ -37,10 +46,18 @@ class PageLoader(
     private var startTime = 0L
     private var endTime = 0L
 
-    private val tasks = mutableListOf<RenderTask>()
+    private val pageParts = mutableListOf<PagePart>()
 
-    override fun loadPages(viewSize: Size<Int>): Single<List<RenderTask>> {
-        return Single.create { subscriber ->
+    private val lock = Any()
+
+    private val openedPages = SparseBooleanArray()
+
+    private val renderMatrix = Matrix()
+    private val renderBounds = RectF()
+    private val roundedBounds = Rect()
+
+    override fun loadPages(viewSize: Size<Int>): Observable<PagePart> {
+        return Observable.create { subscriber ->
             cacheOrder = 1
             var partCount = 0
             xOffset = -0f
@@ -71,12 +88,13 @@ class PageLoader(
                     rangeList[i].rightBottom.row,
                     rangeList[i].leftTop.col,
                     rangeList[i].rightBottom.col,
-                    defaultSetting.defaultCacheSize - partCount
+                    defaultSetting.defaultCacheSize - partCount,
+                    subscriber
                 )
                 if (partCount >= defaultSetting.defaultCacheSize) continue
             }
 
-            subscriber.onSuccess(tasks)
+            subscriber.onComplete()
         }
     }
 
@@ -86,13 +104,22 @@ class PageLoader(
         lastRow: Int,
         firstCol: Int,
         lastCol: Int,
-        partsLoadable: Int
+        partsLoadable: Int,
+        subscriber: ObservableEmitter<PagePart>
     ): Int {
 
         var loaded = 0
         for (row in firstRow..lastRow) {
             for (col in firstCol..lastCol) {
-                if (loadPart(page, row, col, pageRelativePartWidth, pageRelativePartHeight)) {
+                if (loadPart(
+                        page,
+                        row,
+                        col,
+                        pageRelativePartWidth,
+                        pageRelativePartHeight,
+                        subscriber
+                    )
+                ) {
                     loaded++
                 }
                 if (loaded >= partsLoadable) {
@@ -109,10 +136,10 @@ class PageLoader(
         row: Int,
         col: Int,
         pageRelativePartWidth: Float,
-        pageRelativePartHeight: Float
+        pageRelativePartHeight: Float,
+        subscriber: ObservableEmitter<PagePart>
     ): Boolean {
 
-        startTime = SystemClock.elapsedRealtime()
         val relX = pageRelativePartWidth * col
         val relY = pageRelativePartHeight * row
         var partWidth = pageRelativePartWidth
@@ -137,12 +164,12 @@ class PageLoader(
 
             val renderTask = createRenderTask(
                 page, renderWidth, renderHeight, boundRect, cacheOrder,
-                annotRender = false,
+                annotRender = true,
                 isThumbnail = false
             )
-            tasks.add(renderTask)
-            endTime = SystemClock.elapsedRealtime()
-            Log.e("PartElapsedTime", "loadPart time : ${endTime - startTime} ms")
+
+            makePagePart(renderTask)?.let(subscriber::onNext)
+
             cacheOrder++
             return true
         }
@@ -234,6 +261,58 @@ class PageLoader(
 
         return renderingRanges
     }
+
+    private fun makePagePart(task: RenderTask): PagePart? {
+        synchronized(lock) {
+            runCatching { pdfCoreAction.openPage(task.page) }
+                .onSuccess {
+                    openedPages.put(task.page, true)
+                }
+                .onFailure {
+                    openedPages.put(task.page, false)
+                }
+
+            val w: Int = round(task.width).toInt()
+            val h: Int = round(task.height).toInt()
+
+            if (w == 0 || h == 0 || hasErrorPage(task.page)) {
+                return null
+            }
+
+            runCatching {
+                Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+            }.onSuccess {
+                renderMatrix.calculateBounds(w, h, task.bounds)
+                startTime = SystemClock.elapsedRealtime()
+                pdfCoreAction.renderPageBitmap(
+                    task.page,
+                    it,
+                    roundedBounds,
+                    task.isAnnotationRendering
+                )
+                endTime = SystemClock.elapsedRealtime()
+                Log.e("PartElapsedTime", "loadPart renderBitmap : ${endTime - startTime} ms")
+                return PagePart(task.page, it, task.bounds, task.cacheOrder, task.thumbnail)
+            }.onFailure {
+                return null
+            }
+        }
+
+        return null
+    }
+
+    private fun Matrix.calculateBounds(width: Int, height: Int, pageSliceBounds: RectF) {
+        reset()
+        postTranslate(-pageSliceBounds.left * width, -pageSliceBounds.top * height)
+        postScale(1 / pageSliceBounds.width(), 1 / pageSliceBounds.height())
+
+        renderBounds.set(0f, 0f, width.toFloat(), height.toFloat())
+        mapRect(renderBounds)
+        renderBounds.round(roundedBounds)
+    }
+
+    private fun hasErrorPage(page: Int): Boolean =
+        !openedPages.get(page, false)
 
 //    private fun loadThumbnail(page: Int) {
 //        val pageSize = pageSetup.getPageSize(page)
