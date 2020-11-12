@@ -38,6 +38,19 @@ class CacheManagerImpl : CacheManager {
         }
     }
 
+    override fun clearCache() {
+        synchronized(lock) {
+            for (pagePart in passiveCache) {
+                pagePart.renderedPart.recycle()
+            }
+            passiveCache.clear()
+            for (pagePart in activeCache) {
+                pagePart.renderedPart.recycle()
+            }
+            activeCache.clear()
+        }
+    }
+
     private fun makeFreeSpace() {
         synchronized(lock) {
             while (activeCache.size + passiveCache.size >= DefaultSetting.CACHE_SIZE &&

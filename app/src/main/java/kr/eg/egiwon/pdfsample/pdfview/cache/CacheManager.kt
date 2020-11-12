@@ -9,4 +9,6 @@ interface CacheManager {
 
     fun getPageParts(): List<PagePart>
 
+    fun clearCache()
+
 }
