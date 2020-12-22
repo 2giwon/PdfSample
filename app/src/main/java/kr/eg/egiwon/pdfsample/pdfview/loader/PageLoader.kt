@@ -5,7 +5,6 @@ import android.graphics.Matrix
 import android.graphics.Rect
 import android.graphics.RectF
 import android.os.SystemClock
-import android.util.Log
 import android.util.SparseBooleanArray
 import io.reactivex.Observable
 import io.reactivex.ObservableEmitter
@@ -17,6 +16,7 @@ import kr.eg.egiwon.pdfsample.pdfview.render.model.PagePart
 import kr.eg.egiwon.pdfsample.pdfview.render.model.RenderTask
 import kr.eg.egiwon.pdfsample.pdfview.setup.PdfSetupManager
 import kr.eg.egiwon.pdfsample.util.DefaultSetting
+import kr.eg.egiwon.pdfsample.util.PdfLog
 import kr.eg.egiwon.pdfsample.util.Size
 import java.util.*
 import kotlin.math.abs
@@ -263,8 +263,14 @@ class PageLoader(
     }
 
     private fun makePagePart(task: RenderTask): PagePart? {
+        startTime = SystemClock.elapsedRealtime()
         synchronized(lock) {
-            runCatching { pdfCoreAction.openPage(task.page) }
+            runCatching {
+                pdfCoreAction.openPage(task.page)
+                endTime = SystemClock.elapsedRealtime()
+                PdfLog.e("Leegiwon", "openPage after : ${endTime - startTime} ms")
+                startTime = SystemClock.elapsedRealtime()
+            }
                 .onSuccess {
                     openedPages.put(task.page, true)
                 }
@@ -283,7 +289,7 @@ class PageLoader(
                 Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
             }.onSuccess {
                 renderMatrix.calculateBounds(w, h, task.bounds)
-                startTime = SystemClock.elapsedRealtime()
+
                 pdfCoreAction.renderPageBitmap(
                     task.page,
                     it,
@@ -291,7 +297,7 @@ class PageLoader(
                     task.isAnnotationRendering
                 )
                 endTime = SystemClock.elapsedRealtime()
-                Log.e("PartElapsedTime", "loadPart renderBitmap : ${endTime - startTime} ms")
+                PdfLog.e("Leegiwon", "loadPart renderBitmap : ${endTime - startTime} ms")
                 return PagePart(task.page, it, task.bounds, task.cacheOrder, task.thumbnail)
             }.onFailure {
                 return null
