@@ -40,14 +40,13 @@ class PdfCore @Inject constructor(context: Context) : PdfCoreAction {
         }
     }
 
-    override fun getPageCount(): Int = pdfCore.getPageCount(pdfDocument)
+    override fun getPageCount(): Int = runCatching {
+        pdfCore.getPageCount(pdfDocument)
+    }.getOrDefault(0)
 
     override fun getPageSize(pageNum: Int): Size<Int> {
-        pdfCore.openPage(pdfDocument, pageNum)
-        return Size(
-            pdfCore.getPageWidth(pdfDocument, pageNum),
-            pdfCore.getPageHeight(pdfDocument, pageNum)
-        )
+        val size = pdfCore.getPageSize(pdfDocument, pageNum)
+        return Size(size.width, size.height)
     }
 
     override fun openPage(page: Int) {
