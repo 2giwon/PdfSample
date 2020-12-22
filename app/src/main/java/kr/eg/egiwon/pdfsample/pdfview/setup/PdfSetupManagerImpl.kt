@@ -30,10 +30,10 @@ class PdfSetupManagerImpl(
 
     private var zoom = 1f
 
-    override fun pageSetup(viewSize: Size<Int>, onPageCount: (Int) -> Unit, setupComplete: () -> Unit) {
-        Single.fromCallable {
-            onPageCount(pageCount)
-            for (i in 0 until pageCount) {
+    override fun pageSetup(viewSize: Size<Int>): Single<Unit> {
+        return Single.fromCallable {
+
+            for (i in 0 until _pageCount) {
                 val pageSize: Size<Int> = pdfCoreAction.getPageSize(i)
                 if (pageSize.width > maxPageSize.width) {
                     maxPageSize = pageSize
