@@ -1,11 +1,7 @@
 package kr.eg.egiwon.pdfsample.pdfview.setup
 
 import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.rxkotlin.addTo
-import io.reactivex.rxkotlin.subscribeBy
-import io.reactivex.schedulers.Schedulers
 import kr.eg.egiwon.pdfsample.pdfcore.PdfCoreAction
 import kr.eg.egiwon.pdfsample.pdfview.pagesize.PageSizeOptimizeManagerImpl
 import kr.eg.egiwon.pdfsample.util.DefaultSetting
@@ -30,7 +26,7 @@ class PdfSetupManagerImpl(
 
     private var documentLength: Float = 0f
 
-    private val pageCount: Int by lazy(pdfCoreAction::getPageCount)
+    private val _pageCount: Int by lazy(pdfCoreAction::getPageCount)
 
     private var zoom = 1f
 
@@ -48,13 +44,12 @@ class PdfSetupManagerImpl(
 
                 originalPageSizes.add(pageSize)
             }
-        }.subscribeOn(Schedulers.computation())
-            .map { calcPageFitSize(viewSize) }
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                setupComplete()
-            }.addTo(compositeDisposable)
+        }.map { calcPageFitSize(viewSize) }
+
+
     }
+
+    override fun getPageCountFromLoadedDocument(): Int = _pageCount
 
     override fun getPageAtOffset(offset: Float): Int {
         var currentPage = 0
@@ -69,7 +64,7 @@ class PdfSetupManagerImpl(
         return if (--currentPage >= 0) currentPage else 0
     }
 
-    override fun getCurrentDocumentPageCount(): Int = pageCount
+    override fun getCurrentDocumentPageCount(): Int = _pageCount
 
     override fun getPageZoom(): Float = zoom
 
