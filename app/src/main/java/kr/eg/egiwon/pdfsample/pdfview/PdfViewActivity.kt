@@ -3,6 +3,7 @@ package kr.eg.egiwon.pdfsample.pdfview
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.viewModels
+import androidx.lifecycle.Observer
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -46,7 +47,10 @@ class PdfViewActivity : BaseActivity<ActivityPdfBinding, PdfViewModel>(
                 val size =
                     Size(binding.pdfPageView.measuredWidth, binding.pdfPageView.measuredHeight)
 
-                viewModel.requestPageSetup(size)
+                runOnUiThread {
+                    viewModel.requestPageSetup(size)
+                }
+
             }
         })
 //
