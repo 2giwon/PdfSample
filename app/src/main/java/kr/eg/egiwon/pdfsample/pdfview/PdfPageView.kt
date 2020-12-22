@@ -124,8 +124,10 @@ class PdfPageView @JvmOverloads constructor(
 
             val translationX: Float = currentXOffset + translateX
             val translationY: Float = currentYOffset + translateY
-            if (translationX + dstRect.left >= this@PdfPageView.width || translationX + dstRect.right <= 0 ||
-                translationY + dstRect.top >= this@PdfPageView.height || translationY + dstRect.bottom <= 0
+            if (translationX + dstRect.left >= this@PdfPageView.width ||
+                translationX + dstRect.right <= 0 ||
+                translationY + dstRect.top >= this@PdfPageView.height ||
+                translationY + dstRect.bottom <= 0
             ) {
                 canvas.translate(-translateX, -translateY)
                 return
