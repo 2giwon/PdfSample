@@ -19,9 +19,15 @@ android {
     }
 
     buildTypes {
+        debug {
+            debuggable true
+            buildConfigField("boolean", "logEnabled", "true")
+        }
         release {
+            debuggable false
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField("boolean", "logEnabled", "false")
         }
     }
 
