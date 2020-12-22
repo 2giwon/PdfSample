@@ -1,5 +1,6 @@
 package kr.eg.egiwon.pdfsample.ext
 
+import kr.eg.egiwon.pdfsample.util.PdfLog
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -18,5 +19,13 @@ private fun getDecimalFormat(size: Long, digitGroup: Int) =
 
 fun Long.toLastModifiedTime(): String {
     val date = Date(this)
-    return SimpleDateFormat("YY/MM/dd", Locale.getDefault()).format(date)
+    return SimpleDateFormat("yy/MM/dd", Locale.getDefault()).format(date)
+}
+
+fun Long.printLogElapsedTime() {
+    val simpleDateFormat =
+        SimpleDateFormat("ss.SSS", Locale.getDefault())
+            .format(this)
+
+    PdfLog.d("Leegiwon", "elapsedTime : $simpleDateFormat")
 }
