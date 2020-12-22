@@ -1,10 +1,13 @@
 package kr.eg.egiwon.pdfsample.pdfview.setup
 
+import io.reactivex.Single
 import kr.eg.egiwon.pdfsample.util.Size
 
 interface PdfSetupManager {
 
-    fun pageSetup(viewSize: Size<Int>, onPageCount: (Int) -> Unit, setupComplete: () -> Unit)
+    fun pageSetup(viewSize: Size<Int>): Single<Unit>
+
+    fun getPageCountFromLoadedDocument(): Int
 
     fun getPageAtOffset(offset: Float): Int
 

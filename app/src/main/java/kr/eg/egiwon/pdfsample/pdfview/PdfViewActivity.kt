@@ -54,7 +54,7 @@ class PdfViewActivity : BaseActivity<ActivityPdfBinding, PdfViewModel>(
 //            binding.pdfPageView.addPdfPage(it)
 //        })
 
-        viewModel.pageCount.observe(this, EventObserver { pageCount ->
+        viewModel.pageCount.observe(this, Observer { pageCount ->
             binding.pdfPageView.setPageCount(pageCount)
         })
 
@@ -69,6 +69,11 @@ class PdfViewActivity : BaseActivity<ActivityPdfBinding, PdfViewModel>(
 
         viewModel.time.observe(this, EventObserver {
             showToast("pageSetup Complete Elapsed Time ${it}ms")
+        })
+
+        viewModel.errorLiveData.observe(this, Observer {
+            binding.pdfPageView.clearData()
+            onBackPressed()
         })
     }
 

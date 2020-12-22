@@ -5,6 +5,7 @@ import android.os.SystemClock
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -35,8 +36,8 @@ class PdfViewModel @ViewModelInject constructor(
     private val _isShowLoadingBar = MutableLiveData<Boolean>()
     val isShowLoadingBar: LiveData<Boolean> get() = _isShowLoadingBar
 
-    private val _pageCount = MutableLiveData<Event<Int>>()
-    val pageCount: LiveData<Event<Int>> get() = _pageCount
+    private val _pageCount = MutableLiveData<Int>()
+    val pageCount: LiveData<Int> get() = _pageCount
 
     private val _pageSize = MutableLiveData<Event<Size<Float>>>()
     val pageSize: LiveData<Event<Size<Float>>> get() = _pageSize
@@ -54,6 +55,10 @@ class PdfViewModel @ViewModelInject constructor(
     private val _pageSetupCompletedManager = MutableLiveData<Event<PdfSetupManager>>()
     val pageSetupCompletedManager: LiveData<Event<PdfSetupManager>> get() = _pageSetupCompletedManager
 
+    val errorLiveData: LiveData<Unit> = Transformations.map(errorThrowableMutableLiveData) {
+        closeDocument()
+    }
+
     private var startTime = 0L
     private var endTime = 0L
 
@@ -68,23 +73,34 @@ class PdfViewModel @ViewModelInject constructor(
             .doOnSubscribe { _isShowLoadingBar.postValue(true) }
             .doOnError { _isShowLoadingBar.postValue(false) }
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                _isOpenDocument.value = Event(it)
-            }.addTo(compositeDisposable)
+            .subscribeBy(
+                onSuccess = {
+                    _isOpenDocument.value = Event(it)
+                    _pageCount.value = pageSetupManager.getPageCountFromLoadedDocument()
+
+                },
+                onError = {
+                    errorThrowableMutableLiveData.value = it
+                }
+            ).addTo(compositeDisposable)
     }
 
     fun requestPageSetup(viewSize: Size<Int>) {
-        pageSetupManager.pageSetup(viewSize,
-            onPageCount = {
-                _pageCount.postValue(Event(it))
-            },
-            setupComplete = {
-                endTime = SystemClock.elapsedRealtime()
-                _time.value = Event(endTime - startTime)
-                _pageSetupCompletedManager.value = Event(pageSetupManager)
-                loadPages(viewSize)
-            }
-        )
+        startTime = SystemClock.elapsedRealtime()
+        pageSetupManager.pageSetup(viewSize)
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy(
+                onSuccess = {
+                    endTime = SystemClock.elapsedRealtime()
+                    _time.value = Event(endTime - startTime)
+                    _pageSetupCompletedManager.value = Event(pageSetupManager)
+                    loadPages(viewSize)
+                },
+                onError = {
+                    errorThrowableMutableLiveData.value = it
+                }
+            ).addTo(compositeDisposable)
     }
 
     private fun loadPages(viewSize: Size<Int>) {
@@ -92,15 +108,15 @@ class PdfViewModel @ViewModelInject constructor(
             .subscribeOn(Schedulers.computation())
             .doAfterTerminate { _isShowLoadingBar.postValue(false) }
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { part -> _pagePart.value = Event(part) },
-                { errorThrowableMutableLiveData.value = it }
+            .subscribeBy(
+                onNext = { part -> _pagePart.value = Event(part) },
+                onError = { errorThrowableMutableLiveData.value = it }
             ).addTo(compositeDisposable)
     }
 
     private fun loadPdfBitmaps() {
         _pageCount.value?.let { pageCount ->
-            Observable.fromIterable(0 until pageCount.peekContent())
+            Observable.fromIterable(0 until pageCount)
                 .doOnSubscribe { _isShowLoadingBar.postValue(true) }
                 .doAfterTerminate { _isShowLoadingBar.postValue(false) }
                 .subscribeOn(Schedulers.single())
